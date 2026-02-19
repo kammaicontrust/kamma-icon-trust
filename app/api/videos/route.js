@@ -1,11 +1,11 @@
-import { dbConnect } from "../../lib/mongodb.js";
-import Video from "../../models/Video.js";
+
+
 
 
 
 export async function GET() {
   try {
-    await dbConnect();
+    
     const videos = await Video.find().sort({ order: 1 });
     return Response.json(videos);
   } catch (err) {
@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST(req) {
   try {
-    await dbConnect();
+    
     const { link } = await req.json();
 
     if (!link) {
@@ -35,7 +35,7 @@ export async function POST(req) {
 
 export async function DELETE(req) {
   try {
-    await dbConnect();
+   
     const { id } = await req.json();
 
     if (!id) {

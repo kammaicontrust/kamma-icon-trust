@@ -1,16 +1,15 @@
-import { dbConnect } from "../../lib/mongodb.js";
-import Gallery from "../../models/Gallery.js";
+
 import { writeFile } from "fs/promises";
 import path from "path";
 
 export async function GET() {
-  await dbConnect();
+ 
   const images = await Gallery.find().sort({ createdAt: -1 });
   return Response.json(images);
 }
 
 export async function POST(req) {
-  await dbConnect();
+ 
 
   const data = await req.formData();
   const file = data.get("file");
