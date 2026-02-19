@@ -2,92 +2,63 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/app/lib/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export default function VideosSection() {
   const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchVideos() {
-      try {
-        const q = query(
-          collection(db, "videos"),
-          orderBy("createdAt", "desc")
-        );
+    const fetchVideos = async () => {
+      const q = query(
+        collection(db, "videos"),
+        orderBy("createdAt", "desc")
+      );
 
-        const snapshot = await getDocs(q);
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setVideos(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
+      setVideos(data);
+    };
 
     fetchVideos();
   }, []);
 
-  function extractId(url) {
-    const reg =
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^?&]+)/;
-    const match = url.match(reg);
-    return match ? match[1] : null;
-  }
+  if (!videos.length) return null;
 
   return (
-    <section id="videos" className="mt-32 max-w-6xl mx-auto px-6">
-      <h2 className="text-3xl font-bold mb-12 text-center text-yellow-500 tracking-wide">
+    <section className="bg-black py-24 text-white">
+      <h2 className="text-center text-5xl font-bold text-yellow-400 mb-16">
         VIDEOS
       </h2>
 
-      {loading && (
-        <p className="text-center text-gray-400">
-          Loading videos...
-        </p>
-      )}
+      <div className="max-w-7xl mx-auto px-6 
+                      grid gap-14
+                      grid-cols-1 md:grid-cols-2">
 
-      {!loading && videos.length === 0 && (
-        <p className="text-center text-gray-400">
-          No videos added yet.
-        </p>
-      )}
+        {videos.map((video) => {
+          if (!video?.videoId) return null;
 
-      <div
-        className={`grid gap-10 ${
-          videos.length === 1
-            ? "grid-cols-1 justify-items-center"
-            : "grid-cols-1 md:grid-cols-2"
-        }`}
-      >
-        {videos
-  ?.filter(video => video?.url)
-  .map((video, index) => {
-     const idMatch = video.url.match(/(?:v=|youtu\.be\/)([^&]+)/);
-     const videoId = idMatch ? idMatch[1] : null;
-
-     if (!videoId) return null;
-
-     return (
-        <iframe
-           key={index}
-           src={`https://www.youtube.com/embed/${videoId}`}
-           allowFullScreen
-        />
-     );
-  })
-}
+          return (
+            <div
+              key={video.id}
+              className="rounded-3xl overflow-hidden
+                         shadow-2xl shadow-yellow-500/20
+                         transform transition duration-500
+                         hover:scale-105"
+            >
+              <div className="relative w-full pb-[56.25%]">
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.videoId}`}
+                  allowFullScreen
+                  className="absolute top-0 left-0 w-full h-full"
+                ></iframe>
+              </div>
+            </div>
+          );
+        })}
 
       </div>
     </section>
