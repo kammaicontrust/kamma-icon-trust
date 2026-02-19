@@ -71,24 +71,24 @@ export default function VideosSection() {
             : "grid-cols-1 md:grid-cols-2"
         }`}
       >
-        {videos.map((video) => {
-          const id = extractId(video.link);
-          if (!id) return null;
+        {videos
+  ?.filter(video => video?.url)
+  .map((video, index) => {
+     const idMatch = video.url.match(/(?:v=|youtu\.be\/)([^&]+)/);
+     const videoId = idMatch ? idMatch[1] : null;
 
-          return (
-            <div
-              key={video.id}
-              className="relative w-full max-w-3xl aspect-video rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:scale-105 hover:shadow-yellow-500/40"
-            >
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${id}`}
-                title="YouTube video"
-                allowFullScreen
-              />
-            </div>
-          );
-        })}
+     if (!videoId) return null;
+
+     return (
+        <iframe
+           key={index}
+           src={`https://www.youtube.com/embed/${videoId}`}
+           allowFullScreen
+        />
+     );
+  })
+}
+
       </div>
     </section>
   );
