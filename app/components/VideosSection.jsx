@@ -8,7 +8,7 @@ export default function VideosSection() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Extract YouTube Video ID from URL
+  // Extract YouTube video ID from URL
   const extractVideoId = (url) => {
     if (!url) return null;
 
@@ -48,29 +48,19 @@ export default function VideosSection() {
     );
   }
 
-  if (!videos.length) {
-    return null;
-  }
+  if (!videos.length) return null;
 
   return (
     <section className="bg-black py-24 px-6">
-      {/* Title */}
-      <h2 className="text-center text-5xl font-bold text-yellow-400 mb-16 tracking-wide">
+      
+      {/* Section Title */}
+      <h2 className="text-center text-5xl font-bold text-yellow-400 mb-20 tracking-wide">
         VIDEOS
       </h2>
 
-      {/* Video Grid */}
-      <div
-        className="
-          max-w-6xl
-          mx-auto
-          grid
-          gap-16
-          grid-cols-1
-          md:grid-cols-2
-          justify-items-center
-        "
-      >
+      {/* FLEX LAYOUT (Better than grid for dynamic items) */}
+      <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-16">
+
         {videos.map((video) => {
           const videoId = extractVideoId(video.url);
           if (!videoId) return null;
@@ -80,6 +70,8 @@ export default function VideosSection() {
               key={video.id}
               className="
                 w-full
+                sm:w-[90%]
+                md:w-[45%]
                 max-w-2xl
                 rounded-3xl
                 overflow-hidden
@@ -103,7 +95,9 @@ export default function VideosSection() {
             </div>
           );
         })}
+
       </div>
+
     </section>
   );
 }
