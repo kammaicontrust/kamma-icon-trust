@@ -1,3 +1,4 @@
+import "./globals.css";
 import Script from "next/script";
 import ClientWrapper from "./ClientWrapper";
 
