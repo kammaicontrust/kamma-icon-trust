@@ -5,7 +5,12 @@ import ClientWrapper from "./ClientWrapper";
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
+      <body>
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
+
+        {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-ML2SCJJL5"
           strategy="afterInteractive"
@@ -18,11 +23,6 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-ML2SCJJL5');
           `}
         </Script>
-      </head>
-      <body>
-        <ClientWrapper>
-          {children}
-        </ClientWrapper>
       </body>
     </html>
   );
