@@ -27,7 +27,7 @@ export default function LaunchBanner() {
         </h1>
 
         <img
-          src="C:\Users\gowth\kamma-icon-trust\public\sridhar.png"
+          src="public\sridhar.png"
           className="launch-photo"
           alt="Chief Guest"
         />
