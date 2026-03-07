@@ -16,6 +16,7 @@ import GallerySection from "./components/GallerySection";
 import VideosSection from "./components/VideosSection";
 import Initiatives from "./components/Initiatives";
 import Link from "next/link";
+import LaunchBanner from "./components/LaunchBanner";
 
 
 
@@ -49,7 +50,7 @@ export default function Home() {
   {/* animations / particles / cursor */}
 </ClientOnly>
 
-
+<LaunchBanner />
   
 
 
@@ -143,21 +144,8 @@ export default function Home() {
   style={{ backgroundImage: "url('/hero-bg.jpg')" }}
 >
 
- <div
-  style={{
-    background: "linear-gradient(90deg,#d4af37,#f6e27a,#d4af37)",
-    color: "#000",
-    padding: "10px 25px",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    letterSpacing: "1px",
-    marginBottom: "20px",
-    display: "inline-block",
-    boxShadow: "0 0 15px rgba(212,175,55,0.6)"
-  }}
->
-  Official Launch of the Kamma Icon Trust Website
-</div>
+ 
+  
 
 
     {/* GOLD PARTICLES */}
