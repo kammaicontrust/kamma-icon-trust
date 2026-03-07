@@ -35,7 +35,7 @@ export default function LaunchBanner() {
         </h2>
 
         <img
-          src="/donor.jpg"
+          src="./donor.jpg"
           className="launch-photo"
           alt="SRIDHAR PATIBANDLA GARU"
         />
