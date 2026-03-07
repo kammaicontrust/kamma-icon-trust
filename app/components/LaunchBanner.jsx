@@ -27,7 +27,7 @@ export default function LaunchBanner() {
         </h1>
 
         <img
-          src="public/sridhar.png"
+          src="/sridhar.png"
           className="launch-photo"
           alt="Chief Guest"
         />
