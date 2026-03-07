@@ -9,7 +9,7 @@ export default function LaunchBanner() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-    }, 120000); // 2 minutes
+    }, 120000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -17,17 +17,19 @@ export default function LaunchBanner() {
   if (!visible) return null;
 
   return (
+
     <div className="launch-overlay">
 
       <div className="launch-content">
 
         <h1 className="launch-title">
-          Official Launch of the Kamma Icon Trust Website
+          OFFICIAL LAUNCH OF THE KAMMA ICON TRUST WEBSITE
         </h1>
 
         <img
-          src="/sridhar.png"
+          src="/sridhar.jpg"
           className="launch-photo"
+          alt="Chief Guest"
         />
 
         <h2 className="launch-name">
@@ -45,5 +47,6 @@ export default function LaunchBanner() {
       </div>
 
     </div>
+
   );
 }
