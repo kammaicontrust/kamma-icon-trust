@@ -1316,3 +1316,46 @@ opacity:1;
 }
 
 }
+.launch-content{
+text-align:center;
+max-width:900px;
+padding:40px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
+
+.launch-title{
+
+font-size:48px;
+color:#d4af37;
+
+text-transform:uppercase;
+
+text-align:center;
+
+text-shadow:
+0 0 20px gold,
+0 0 40px gold;
+
+margin-bottom:50px;
+
+}
+
+.launch-photo{
+
+width:170px;
+height:170px;
+
+border-radius:50%;
+
+border:6px solid gold;
+
+margin-bottom:25px;
+
+box-shadow:0 0 40px gold;
+
+display:block;
+
+}
