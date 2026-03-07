@@ -143,7 +143,15 @@ export default function Home() {
   style={{ backgroundImage: "url('/hero-bg.jpg')" }}
 >
 
- 
+ <div style={{
+  background:"#d4af37",
+  color:"#000",
+  padding:"10px",
+  textAlign:"center",
+  fontWeight:"bold"
+}}>
+  Official Launch of the Kamma Icon Trust Website
+</div>
 
 
     {/* GOLD PARTICLES */}
