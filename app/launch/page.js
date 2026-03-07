@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function LaunchPage() {
   const router = useRouter();
   const [count, setCount] = useState(null);
+  const [launch, setLaunch] = useState(false);
 
   const startLaunch = () => {
     let counter = 3;
@@ -13,15 +14,18 @@ export default function LaunchPage() {
 
     const interval = setInterval(() => {
       counter--;
+
       if (counter === 0) {
         clearInterval(interval);
-        setCount("🚀");
+        setLaunch(true);
+
         setTimeout(() => {
           router.push("/");
-        }, 1500);
+        }, 2000);
       } else {
         setCount(counter);
       }
+
     }, 1000);
   };
 
@@ -38,44 +42,78 @@ export default function LaunchPage() {
       fontFamily: "sans-serif"
     }}>
 
-      <h1 style={{fontSize:"48px", marginBottom:"10px"}}>
+      {/* TITLE */}
+      <h1 style={{
+        fontSize:"60px",
+        letterSpacing:"4px",
+        textShadow:"0 0 20px #d4af37"
+      }}>
         KAMMA ICON TRUST
       </h1>
 
-      <p style={{opacity:0.8, marginBottom:"40px"}}>
+      <p style={{marginTop:"10px",opacity:0.8}}>
         Official Website Launch
       </p>
 
-      {count === null && (
+      {/* BUTTON */}
+      {count === null && !launch && (
         <button
           onClick={startLaunch}
           style={{
+            marginTop:"40px",
             padding:"16px 40px",
             borderRadius:"40px",
             border:"2px solid #d4af37",
             background:"transparent",
             color:"#d4af37",
             fontSize:"20px",
-            cursor:"pointer"
+            cursor:"pointer",
+            transition:"0.3s"
           }}
         >
           Launch Website
         </button>
       )}
 
-      {count !== null && (
+      {/* COUNTDOWN */}
+      {count !== null && !launch && (
         <div style={{
-          fontSize:"120px",
-          marginTop:"40px",
-          fontWeight:"bold"
+          fontSize:"140px",
+          marginTop:"30px",
+          fontWeight:"bold",
+          textShadow:"0 0 30px #d4af37"
         }}>
           {count}
         </div>
       )}
 
-      <p style={{marginTop:"60px", opacity:0.6}}>
-        Kamma Icon Trust – Empowering Communities
+      {/* ROCKET */}
+      {launch && (
+        <div style={{
+          fontSize:"120px",
+          marginTop:"40px",
+          animation:"rocketMove 2s forwards"
+        }}>
+          🚀
+        </div>
+      )}
+
+      <p style={{marginTop:"60px",opacity:0.6}}>
+        Empowering Communities Across India
       </p>
+
+      <style jsx>{`
+        @keyframes rocketMove {
+          0% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-600px);
+            opacity: 0;
+          }
+        }
+      `}</style>
 
     </div>
   );
