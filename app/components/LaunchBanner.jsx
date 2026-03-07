@@ -22,10 +22,8 @@ export default function LaunchBanner() {
 
       <div className="launch-content">
 
-        <h1 className="launch-title">
-           
+        <h1 className="launch-title">   
           OFFICIAL LAUNCH OF THE KAMMA ICON TRUST WEBSITE
-         
         </h1>
 
         <img
