@@ -4,48 +4,42 @@ import { useEffect, useState } from "react";
 
 export default function LaunchBanner() {
 
-  const [show, setShow] = useState(true);
-  const [drop, setDrop] = useState(false);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-
     const timer = setTimeout(() => {
-      setDrop(true);
+      setVisible(false);
+    }, 120000); // 2 minutes
 
-      setTimeout(()=>{
-        setShow(false);
-      },1500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    },120000); // 2 minutes
-
-    return ()=>clearTimeout(timer);
-
-  },[]);
-
-  if(!show) return null;
+  if (!visible) return null;
 
   return (
+    <div className="launch-overlay">
 
-    <div className={`launch-wrapper ${drop ? "drop" : ""}`}>
+      <div className="launch-content">
 
-      <div className="launch-banner">
-
-        <h2 className="launch-title">
+        <h1 className="launch-title">
           Official Launch of the Kamma Icon Trust Website
-        </h2>
+        </h1>
 
         <img
-          src="./donor.jpg"
+          src="/donor.jpg"
           className="launch-photo"
-          alt="SRIDHAR PATIBANDLA GARU"
         />
 
-        <h3 className="launch-name">
-          Sri SRIDHAR PATIBANDLA GARU
-        </h3>
+        <h2 className="launch-name">
+          Sri Sridhar Patibandla Garu
+        </h2>
 
-        <p className="launch-designation">
-          Co-Founder, Kastech, a successful entrepreneur in the IT and real estate sectors with a strong global business presence
+        <p className="launch-role">
+          Co-Founder, Kastech
+        </p>
+
+        <p className="launch-desc">
+          A successful entrepreneur in the IT and real estate sectors with a strong global business presence.
         </p>
 
       </div>
