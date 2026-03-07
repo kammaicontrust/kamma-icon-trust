@@ -41,11 +41,11 @@ export default function LaunchBanner() {
         />
 
         <h3 className="launch-name">
-          Sri _________
+          Sri SRIDHAR PATIBANDLA GARU
         </h3>
 
-        <p className=" Co-Founder, Kastech, a successful entrepreneur in the IT and real estate sectors with a strong global business presence">
-          Chief Guest / Donor
+        <p className="launch-designation">
+          Co-Founder, Kastech, a successful entrepreneur in the IT and real estate sectors with a strong global business presence
         </p>
 
       </div>
