@@ -25,11 +25,11 @@ export default function LaunchBanner() {
         <h1 className="launch-title">
            
           OFFICIAL LAUNCH OF THE KAMMA ICON TRUST WEBSITE
-           letter-spacing: 2px;
+         
         </h1>
 
         <img
-          src="/sridhar.png"
+          src="C:\Users\gowth\kamma-icon-trust\public\sridhar.png"
           className="launch-photo"
           alt="Chief Guest"
         />
