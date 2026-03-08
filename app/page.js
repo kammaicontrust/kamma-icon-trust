@@ -16,7 +16,7 @@ import GallerySection from "./components/GallerySection";
 import VideosSection from "./components/VideosSection";
 import Initiatives from "./components/Initiatives";
 import Link from "next/link";
-import LaunchBanner from "./components/LaunchBanner";
+
 
 
 
