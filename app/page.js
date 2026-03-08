@@ -50,7 +50,7 @@ export default function Home() {
   {/* animations / particles / cursor */}
 </ClientOnly>
 
-<LaunchBanner />
+
   
 
 
