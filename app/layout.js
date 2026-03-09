@@ -1,11 +1,14 @@
 import "./globals.css";
 import Script from "next/script";
+import LottieLoader from "./components/LottieLoader";
 import ClientWrapper from "./ClientWrapper";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <LottieLoader />
+        
         <ClientWrapper>
           {children}
         </ClientWrapper>
