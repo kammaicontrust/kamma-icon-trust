@@ -9,6 +9,7 @@ export default function LottieLoader({ children }) {
 
   const [loading,setLoading] = useState(true);
   const [fade,setFade] = useState(false);
+  const [showLogo,setShowLogo] = useState(false);
 
   useEffect(()=>{
 
@@ -24,13 +25,16 @@ export default function LottieLoader({ children }) {
       setFade(true);
 
       setTimeout(()=>{
-        setLoading(false);
+        setShowLogo(true);
       },600);
+
+      setTimeout(()=>{
+        setLoading(false);
+      },2000);
 
     },3000);
 
   },[]);
-
 
   if(loading){
 
@@ -38,18 +42,32 @@ export default function LottieLoader({ children }) {
 
       <div className={`loader-screen ${fade ? "fade-out" : ""}`}>
 
-        <div className="loader-content">
+        {!showLogo ? (
 
-          <canvas
-            ref={canvasRef}
-            className="loader-animation"
-          />
+          <div className="loader-content">
 
-          <h2 className="loader-title">
-            KAMMA ICON TRUST
-          </h2>
+            <canvas
+              ref={canvasRef}
+              className="loader-animation"
+            />
 
-        </div>
+            <h2 className="loader-title">
+              KAMMA ICON TRUST
+            </h2>
+
+          </div>
+
+        ) : (
+
+          <div className="logo-reveal">
+
+            <img src="/logo.png" className="reveal-logo"/>
+
+            <h1>KAMMA ICON TRUST</h1>
+
+          </div>
+
+        )}
 
       </div>
 
