@@ -61,7 +61,7 @@ export default function LottieLoader({ children }) {
 
           <div className="logo-reveal">
 
-            <img src="/logo.png" className="reveal-logo"/>
+            <img src="public\logo.png" className="reveal-logo"/>
 
             <h1>KAMMA ICON TRUST</h1>
 
