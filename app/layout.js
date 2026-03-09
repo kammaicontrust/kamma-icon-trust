@@ -3,12 +3,17 @@ import Script from "next/script";
 import LottieLoader from "./components/LottieLoader";
 import ClientWrapper from "./ClientWrapper";
 
+export const metadata = {
+  title: "Kamma Icon Trust",
+  description: "Official website of Kamma Icon Trust, a non-profit organization dedicated to empowering the Kamma community through education, healthcare, and social welfare initiatives.",
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
         <LottieLoader />
-        
+
         <ClientWrapper>
           {children}
         </ClientWrapper>
