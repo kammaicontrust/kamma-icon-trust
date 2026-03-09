@@ -42,7 +42,7 @@ export default function LottieLoader({ children }) {
 
           <canvas
             ref={canvasRef}
-            style={{width:"280px",height:"280px",maxWidth:"80%"}}
+            style={{width:"220px",height:"282px"}}
           />
 
           <h2 className="loader-title">
