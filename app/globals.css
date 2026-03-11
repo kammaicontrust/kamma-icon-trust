@@ -1298,3 +1298,33 @@ opacity:1;
 }
 
 }
+.gallery{
+
+padding:80px 40px;
+text-align:center;
+
+}
+
+.gallery-grid{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:20px;
+
+}
+
+.gallery-grid img{
+
+width:100%;
+height:280px;
+object-fit:cover;
+border-radius:10px;
+transition:0.3s;
+
+}
+
+.gallery-grid img:hover{
+
+transform:scale(1.05);
+
+}
