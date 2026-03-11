@@ -10,38 +10,65 @@ const [images,setImages] = useState([]);
 
 useEffect(()=>{
 
-async function loadImages(){
+async function fetchImages(){
 
 const querySnapshot = await getDocs(collection(db,"gallery"));
 
-const imgs = querySnapshot.docs.map(doc=>doc.data());
+const data = querySnapshot.docs.map(doc => ({
+id: doc.id,
+...doc.data()
+}));
 
-setImages(imgs);
+setImages(data);
 
 }
 
-loadImages();
+fetchImages();
 
 },[]);
 
-return (
+return(
 
-<div className="gallery">
+<div style={{
+padding:"80px 40px",
+minHeight:"100vh"
+}}>
 
-<h1>GALLERY</h1>
+<h1 style={{
+textAlign:"center",
+fontSize:"42px",
+color:"#d4af37",
+marginBottom:"50px"
+}}>
+GALLERY
+</h1>
 
-<div className="gallery-grid">
+<div style={{
+display:"grid",
+gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",
+gap:"25px"
+}}>
 
-{images.map((img,i)=>(
-
-<img key={i} src={img.imageUrl} alt="Gallery Image"/>
-
+{images.map((img)=>(
+<img
+key={img.id}
+src={img.imageUrl}
+alt="Gallery Image"
+style={{
+width:"100%",
+height:"280px",
+objectFit:"cover",
+borderRadius:"12px",
+cursor:"pointer",
+transition:"0.3s"
+}}
+/>
 ))}
 
 </div>
 
 </div>
 
-);
+)
 
 }
