@@ -105,7 +105,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
                     : "opacity-0 scale-75"
                 }`}
               >
-                <div className="w-[300px] md:w-[360px] lg:w-[420px] h-[360px] md:h-[400px] lg:h-[420px] relative">
+                <div className="w-[300px] md:w-[360px] lg:w-[420px] h-[360px] md:h-[400px] lg:h-[420px] relative bg-black flex items-center justify-center">
 
                   <Image
                     src={img.imageUrl}
