@@ -60,7 +60,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
         {/* LEFT BUTTON */}
         <button
   onClick={prevSlide}
-  className="absolute left-8 z-20 group"
+  className="absolute left-2 md:left-8 z-20"
 >
   <div className="relative w-14 h-14 flex items-center justify-center
   rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600
@@ -80,7 +80,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
 
 
         {/* SLIDER */}
-        <div className="relative flex items-center justify-center w-full h-[480px] perspective-1000">
+       <div className="relative flex items-center justify-center w-full max-w-[900px] mx-auto h-[420px] md:h-[480px] perspective-1000">
 
           {images.map((img, index) => {
             const position = index - current;
@@ -127,7 +127,7 @@ const [viewerIndex, setViewerIndex] = useState(0);
         {/* RIGHT BUTTON */}
         <button
   onClick={nextSlide}
-  className="absolute right-8 z-20 group"
+  className="absolute right-2 md:right-8 z-20"
 >
   <div className="relative w-14 h-14 flex items-center justify-center
   rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600
