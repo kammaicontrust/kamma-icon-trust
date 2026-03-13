@@ -4,10 +4,18 @@ import { useEffect, useState } from "react";
 import { db } from "@/app/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import Image from "next/image";
+import PremiumGallery from "./PremiumGallery";
+
+
 
 export default function GallerySection() {
   const [images, setImages] = useState([]);
   const [current, setCurrent] = useState(0);
+
+  const [viewerOpen, setViewerOpen] = useState(false);
+const [viewerIndex, setViewerIndex] = useState(0);
+
+
 
   useEffect(() => {
     async function fetchImages() {
@@ -80,6 +88,12 @@ export default function GallerySection() {
             return (
               <div
                 key={img.id}
+                onClick={() => {
+                  setViewerIndex(index);
+                  setViewerOpen(true);
+
+
+                }}
                 className={`absolute transition-all duration-700 ease-in-out rounded-3xl overflow-hidden shadow-2xl
                 ${
                   position === 0
@@ -100,7 +114,7 @@ export default function GallerySection() {
                     sizes="(max-width:768px) 300px,
                            (max-width:1024px) 360px,
                            420px"
-                    className="object-cover rounded-3xl"
+                    className="object-contain rounded-3xl"
                     priority={position === 0}
                   />
 
