@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdPopup() {
   const [showAd, setShowAd] = useState(false);
 
-  // Show immediately (but only if not closed before)
+  // INSTANT SHOW (NO DELAY)
   useEffect(() => {
     const closed = localStorage.getItem("adClosed");
 
@@ -14,7 +14,6 @@ export default function AdPopup() {
     }
   }, []);
 
-  // Close function (save in localStorage)
   const closeAd = () => {
     setShowAd(false);
     localStorage.setItem("adClosed", "true");
@@ -23,40 +22,36 @@ export default function AdPopup() {
   if (!showAd) return null;
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 px-3">
+    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-[9999] px-3">
 
-      <div className="w-full max-w-sm bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden animate-slideUp relative">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden relative animate-slideUp">
 
-        {/* CLOSE BUTTON */}
+        {/* CLOSE */}
         <button
           onClick={closeAd}
-          className="absolute top-2 right-3 text-gray-500 hover:text-black text-xl"
+          className="absolute top-2 right-3 text-gray-500 text-xl"
         >
           ✕
         </button>
 
-        {/* LOGO (CLICKABLE) */}
+        {/* IMAGE */}
         <img
-          src="public\amerispace.jpeg"
+          src="/ads/amerispace.jpeg"
           alt="Amerispace"
           onClick={() =>
-            window.open(
-              "https://amerispace.co.in/",
-              "_blank",
-              "noopener,noreferrer"
-            )
+            window.open("https://amerispace.co.in/", "_blank")
           }
-          className="w-full h-32 object-contain bg-white cursor-pointer hover:scale-105 transition duration-300"
+          className="w-full h-36 object-contain bg-white cursor-pointer"
         />
 
-        {/* CONTENT */}
+        {/* TEXT */}
         <div className="p-4 text-center">
 
           <h2 className="text-lg font-bold text-gray-800">
             Amerispace Pvt. Ltd.
           </h2>
 
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-sm text-gray-600">
             Building Your Future, One Space at a Time
           </p>
 
@@ -67,15 +62,10 @@ export default function AdPopup() {
           {/* BUTTON */}
           <button
             onClick={() =>
-              window.open(
-                "https://amerispace.co.in/",
-                "_blank",
-                "noopener,noreferrer"
-              )
+              window.open("https://amerispace.co.in/", "_blank")
             }
-            className="mt-4 w-full py-2 rounded-xl text-sm font-semibold text-white 
-            bg-gradient-to-r from-yellow-400 to-orange-500 
-            active:scale-95 transition duration-200 shadow-md"
+            className="mt-4 w-full py-3 rounded-xl text-white font-semibold 
+            bg-gradient-to-r from-yellow-400 to-orange-500"
           >
             Know More →
           </button>
@@ -86,12 +76,12 @@ export default function AdPopup() {
       {/* ANIMATION */}
       <style jsx>{`
         .animate-slideUp {
-          animation: slideUp 0.4s ease;
+          animation: slideUp 0.3s ease;
         }
 
         @keyframes slideUp {
           from {
-            transform: translateY(100px);
+            transform: translateY(80px);
             opacity: 0;
           }
           to {
