@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 export default function AdPopup() {
   const [showAd, setShowAd] = useState(false);
 
+  // Show after 15 sec
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowAd(true);
-    }, 15000); // 15 sec
+    }, 15000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -16,27 +17,30 @@ export default function AdPopup() {
   if (!showAd) return null;
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50">
+    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 px-3">
 
-      <div className="pointer-events-auto w-[95%] max-w-sm bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-slideUp">
+      <div className="w-full max-w-sm bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden animate-slideUp">
 
-        {/* Close Button */}
+        {/* CLOSE BUTTON */}
         <button
           onClick={() => setShowAd(false)}
-          className="absolute top-2 right-3 text-gray-500 hover:text-black text-lg"
+          className="absolute top-2 right-3 text-gray-500 hover:text-black text-xl"
         >
           ✕
         </button>
 
-        {/* Image */}
+        {/* LOGO (CLICKABLE) */}
         <img
           src="/ads/amerispace.jpeg"
           alt="Amerispace"
-          className="w-full h-32 object-contain bg-white"
+          onClick={() =>
+            window.open("https://amerispace.co.in/", "_blank", "noopener,noreferrer")
+          }
+          className="w-full h-32 object-contain bg-white cursor-pointer hover:scale-105 transition duration-300"
         />
 
-        {/* Content */}
-        <div className="p-3 text-center">
+        {/* CONTENT */}
+        <div className="p-4 text-center">
 
           <h2 className="text-lg font-bold text-gray-800">
             Amerispace Pvt. Ltd.
@@ -50,18 +54,22 @@ export default function AdPopup() {
             Premium Plots • Villas • Construction • Resorts
           </p>
 
-          {/* Button */}
-         <button
-  onClick={() => window.open("https://amerispace.co.in/", "_blank")}
-  className="block mt-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 rounded-lg text-sm font-semibold hover:scale-105 transition w-full"
->
-  Know More →
-</button>
+          {/* BUTTON */}
+          <button
+            onClick={() =>
+              window.open("https://amerispace.co.in/", "_blank", "noopener,noreferrer")
+            }
+            className="mt-4 w-full py-2 rounded-xl text-sm font-semibold text-white 
+            bg-gradient-to-r from-yellow-400 to-orange-500 
+            active:scale-95 transition duration-200 shadow-md"
+          >
+            Know More →
+          </button>
 
         </div>
       </div>
 
-      {/* Animation */}
+      {/* ANIMATION */}
       <style jsx>{`
         .animate-slideUp {
           animation: slideUp 0.5s ease;
@@ -69,7 +77,7 @@ export default function AdPopup() {
 
         @keyframes slideUp {
           from {
-            transform: translateY(100px);
+            transform: translateY(120px);
             opacity: 0;
           }
           to {
