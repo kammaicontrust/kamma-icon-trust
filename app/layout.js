@@ -2,6 +2,7 @@ import "./globals.css";
 import Script from "next/script";
 import LottieLoader from "./components/LottieLoader";
 import ClientWrapper from "./ClientWrapper";
+import AdBanner from "./components/AdBanner";
 
 export const metadata = {
   title: "Kamma Icon Trust",
@@ -13,6 +14,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <LottieLoader />
+
+        <div className="fixed bottom-4 right-4 w-64 z-50">
+          <AdBanner />
+        </div>
 
         <ClientWrapper>
           {children}
