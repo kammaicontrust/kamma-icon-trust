@@ -37,7 +37,7 @@ export default function AdPopup() {
 
         {/* LOGO (CLICKABLE) */}
         <img
-          src="/amerispace.jpeg"
+          src="public\amerispace.jpeg"
           alt="Amerispace"
           onClick={() =>
             window.open(
