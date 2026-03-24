@@ -16,15 +16,14 @@ export default function RootLayout({ children }) {
       <body>
         <LottieLoader />
 
-        <div className="fixed bottom-4 right-4 w-64 z-50">
-          <AdBanner />
-        </div>
-
-        <AdPopup />
-
+      
         <ClientWrapper>
           {children}
         </ClientWrapper>
+
+        <div className="fixed bottom-4 right-4 w-64 z-50">
+          <AdPopup />
+        </div>
 
         {/* Google Analytics */}
         <Script
