@@ -13,14 +13,19 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+
+        <AdPopup />
+        
         <LottieLoader />
 
       
+      
+
         <ClientWrapper>
           {children}
         </ClientWrapper>
 
-          <AdPopup />
+        
         
 
         {/* Google Analytics */}
