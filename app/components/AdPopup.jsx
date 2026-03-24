@@ -16,7 +16,7 @@ export default function AdPopup() {
   if (!showAd) return null;
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 pointer-events-none">
+    <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50">
 
       <div className="pointer-events-auto w-[95%] max-w-sm bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-slideUp">
 
@@ -51,13 +51,12 @@ export default function AdPopup() {
           </p>
 
           {/* Button */}
-          <a
-            href="https://amerispace.co.in/"
-            target="_blank"
-            className="block mt-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 rounded-lg text-sm font-semibold hover:scale-105 transition"
-          >
-            Know More →
-          </a>
+         <button
+  onClick={() => window.open("https://amerispace.co.in/", "_blank")}
+  className="block mt-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-2 rounded-lg text-sm font-semibold hover:scale-105 transition w-full"
+>
+  Know More →
+</button>
 
         </div>
       </div>
