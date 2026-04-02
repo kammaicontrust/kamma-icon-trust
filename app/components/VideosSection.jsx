@@ -4,53 +4,81 @@ import { useEffect, useState } from "react";
 import { db } from "@/app/lib/firebase";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
-export default function VideoSection() {
+export default function GalleryPage() {
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+        const q = query(
+          collection(db, "videos"),
+          orderBy("createdAt", "desc")
+        );
+
         const snapshot = await getDocs(q);
 
-        const data = snapshot.docs.map(doc => ({
+        const list = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        console.log("VIDEOS:", data); // 🔥 DEBUG
-
-        setVideos(data);
-      } catch (err) {
-        console.error("Video fetch error:", err);
+        setVideos(list);
+      } catch (error) {
+        console.error(error);
       }
     };
 
     fetchVideos();
   }, []);
 
-  if (videos.length === 0) {
-    return (
-      <p className="text-center text-gray-400 mt-10">
-        No videos yet
-      </p>
-    );
-  }
-
   return (
-    <div className="grid md:grid-cols-2 gap-6 p-4">
-      {videos.map((video) => (
-        <div key={video.id} className="bg-gray-900 p-2 rounded-xl">
-          <iframe
-            width="100%"
-            height="250"
-            src={`https://www.youtube.com/embed/${video.videoId}`}
-            title="YouTube video"
-            allowFullScreen
-            className="rounded-xl"
-          ></iframe>
-        </div>
-      ))}
+    <div className="bg-black min-h-screen text-white px-6 py-16">
+
+      {/* MAIN TITLE */}
+      <h1 className="text-center text-4xl font-bold text-yellow-400 mb-16">
+        GALLERY
+      </h1>
+
+      {/* VIDEOS */}
+      <div className="space-y-20">
+
+        {videos.map((video) => (
+          <div key={video.id} className="text-center">
+
+            {/* VIDEO FRAME */}
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-4xl">
+
+                {/* Glow */}
+                <div className="absolute inset-0 bg-yellow-500 blur-3xl opacity-20 rounded-2xl"></div>
+
+                {/* Frame */}
+                <div className="relative bg-gray-900 p-3 rounded-2xl shadow-2xl border border-yellow-500/20">
+
+                  <div className="relative w-full pb-[56.25%] overflow-hidden rounded-xl">
+
+                    <iframe
+                      src={`https://www.youtube.com/embed/${video.videoId}`}
+                      className="absolute top-0 left-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* VIDEO TITLE */}
+            <h2 className="mt-6 text-lg md:text-xl text-yellow-300 font-semibold">
+              ATP SHIVARATRI 2026 SRI CHALA LAKSHMI PRASAD GARU (APIIC DIRECTOR)
+            </h2>
+
+          </div>
+        ))}
+
+      </div>
+
     </div>
   );
 }
