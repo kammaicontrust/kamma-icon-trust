@@ -100,33 +100,26 @@ export default function AdminDashboard() {
   // =========================
   // Add Video
   // =========================
-  const handleAddVideo = async () => {
-    if (!videoLink.trim()) {
-      alert("Paste YouTube link");
-      return;
-    }
+ const handleAddVideo = async () => {
+  if (!videoLink.trim()) {
+    alert("Paste Cloudinary video URL");
+    return;
+  }
 
-    const videoId = extractVideoId(videoLink.trim());
+  try {
+    await addDoc(collection(db, "videos"), {
+      videoUrl: videoLink.trim(),
+      createdAt: new Date(),
+    });
 
-    if (!videoId) {
-      alert("Invalid YouTube link");
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, "videos"), {
-        videoId,
-        createdAt: new Date(),
-      });
-
-      alert("Video added successfully");
-      setVideoLink("");
-      fetchData();
-    } catch (error) {
-      console.error("Video add error:", error);
-      alert("Failed to add video");
-    }
-  };
+    alert("Video added successfully");
+    setVideoLink("");
+    fetchData();
+  } catch (error) {
+    console.error("Video add error:", error);
+    alert("Failed to add video");
+  }
+};
 
   // =========================
   // Delete Video
@@ -183,12 +176,11 @@ export default function AdminDashboard() {
         <h2 className="text-xl text-yellow-400 mb-4">Add Video Link</h2>
 
         <input
-          type="text"
-          value={videoLink}
-          onChange={(e) => setVideoLink(e.target.value)}
-          placeholder="Paste YouTube link"
-          className="w-full px-4 py-2 mb-4 bg-black border border-gray-700 rounded-lg"
-        />
+  type="text"
+  value={videoLink}
+  onChange={(e) => setVideoLink(e.target.value)}
+  placeholder="Paste Cloudinary video URL"
+/>
 
         <button
           onClick={handleAddVideo}
