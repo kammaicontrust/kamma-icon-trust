@@ -1,14 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { db } from "@/app/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 
-export default function AdminVideos() {
+export default function VideosAdmin() {
   const [link, setLink] = useState("");
+  const [videos, setVideos] = useState([]);
 
-  async function handleAdd() {
-    if (!link.trim()) return;
+  useEffect(() => {
+    loadVideos();
+  }, []);
+
+  async function loadVideos() {
+    const snapshot = await getDocs(collection(db, "videos"));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setVideos(data);
+  }
+
+  async function addVideo() {
+    if (!link.trim()) return alert("Paste YouTube link");
 
     await addDoc(collection(db, "videos"), {
       link,
@@ -16,38 +37,56 @@ export default function AdminVideos() {
     });
 
     setLink("");
-    alert("Video added successfully!");
+    loadVideos();
+  }
+
+  async function handleDelete(id) {
+    if (!confirm("Delete this video?")) return;
+    await deleteDoc(doc(db, "videos", id));
+    loadVideos();
   }
 
   return (
-    <div className="max-w-2xl">
-
-      <h1 className="text-2xl font-bold text-yellow-500 mb-8">
-        Add YouTube Video
+    <div>
+      <h1 className="text-3xl font-bold text-yellow-400 mb-10">
+        Video Manager
       </h1>
 
-      <div className="bg-white/5 border border-yellow-500/20 
-      rounded-2xl p-8 shadow-xl space-y-6">
-
+      {/* Add Video */}
+      <div className="bg-black/60 p-8 rounded-2xl border border-yellow-500/20 mb-12">
         <input
           type="text"
-          placeholder="Paste YouTube link"
           value={link}
           onChange={(e) => setLink(e.target.value)}
-          className="w-full bg-black border border-yellow-500/30 
-          rounded-xl px-4 py-3 text-white focus:outline-none 
-          focus:ring-2 focus:ring-yellow-500"
+          placeholder="Paste YouTube link"
+          className="w-full p-3 rounded-lg mb-4 bg-gray-900 text-white"
         />
 
         <button
-          onClick={handleAdd}
-          className="w-full bg-gradient-to-r from-yellow-500 to-yellow-400
-          text-black font-semibold py-3 rounded-xl shadow-lg
-          hover:scale-105 transition duration-300"
+          onClick={addVideo}
+          className="px-6 py-3 bg-yellow-500 text-black font-semibold rounded-lg hover:scale-105 transition"
         >
           Add Video
         </button>
+      </div>
 
+      {/* List */}
+      <div className="space-y-4">
+        {videos.map((vid) => (
+          <div
+            key={vid.id}
+            className="flex justify-between items-center bg-black/60 p-4 rounded-lg border border-yellow-500/20"
+          >
+            <p className="truncate w-3/4">{vid.link}</p>
+
+            <button
+              onClick={() => handleDelete(vid.id)}
+              className="px-4 py-2 bg-red-600 rounded-lg text-white"
+            >
+              Delete
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

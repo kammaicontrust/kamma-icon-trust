@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db, storage } from "../lib/firebase";
-
+import { db, storage } from "@/app/lib/firebase";
 import {
   collection,
   addDoc,
   getDocs,
   deleteDoc,
   doc,
-  serverTimestamp,
+  orderBy,
+  query,
 } from "firebase/firestore";
-
 import {
   ref,
   uploadBytes,
@@ -19,233 +18,202 @@ import {
   deleteObject,
 } from "firebase/storage";
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-import { Bar } from "react-chartjs-2";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
 export default function AdminDashboard() {
-  const [images, setImages] = useState([]);
-  const [videos, setVideos] = useState([]);
   const [file, setFile] = useState(null);
   const [videoLink, setVideoLink] = useState("");
+  const [videos, setVideos] = useState([]);
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 Convert YouTube link to embed format
-const convertToEmbed = (url) => {
-  if (!url) return "";
+  // =========================
+  // Fetch Data
+  // =========================
+  const fetchData = async () => {
+    try {
+      const videoQuery = query(
+        collection(db, "videos"),
+        orderBy("createdAt", "desc")
+      );
+      const videoSnapshot = await getDocs(videoQuery);
+      setVideos(videoSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
-  if (url.includes("youtu.be")) {
-    const id = url.split("youtu.be/")[1].split("?")[0];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-
-  if (url.includes("watch?v=")) {
-    const id = url.split("watch?v=")[1].split("&")[0];
-    return `https://www.youtube.com/embed/${id}`;
-  }
-
-  return url;
-};
-
+      const imageQuery = query(
+        collection(db, "gallery"),
+        orderBy("createdAt", "desc")
+      );
+      const imageSnapshot = await getDocs(imageQuery);
+      setImages(imageSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // ================= FETCH =================
-  const fetchData = async () => {
-    const imageSnap = await getDocs(collection(db, "gallery"));
-    const videoSnap = await getDocs(collection(db, "videos"));
-
-    setImages(
-      imageSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-    );
-
-    setVideos(
-      videoSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-    );
-  };
-
-  // ================= UPLOAD IMAGE =================
+  // =========================
+  // Image Upload
+  // =========================
   const handleUploadImage = async () => {
-    if (!file) return alert("Select a file first");
-
-    setLoading(true);
+    if (!file) {
+      alert("Please select an image");
+      return;
+    }
 
     try {
-      const storagePath = `gallery/${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, storagePath);
+      setLoading(true);
 
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
+      const imageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+      await uploadBytes(imageRef, file);
+      const downloadURL = await getDownloadURL(imageRef);
 
       await addDoc(collection(db, "gallery"), {
         imageUrl: downloadURL,
-        storagePath: storagePath,
-        createdAt: serverTimestamp(),
+        createdAt: new Date(),
       });
 
+      alert("Image uploaded successfully");
       setFile(null);
       fetchData();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Image upload error:", error);
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // =========================
+  // Extract YouTube ID
+  // =========================
+  const extractVideoId = (url) => {
+    if (!url || typeof url !== "string") return null;
+
+    const match = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/
+    );
+
+    return match ? match[1] : null;
+  };
+
+  // =========================
+  // Add Video
+  // =========================
+  const handleAddVideo = async () => {
+    if (!videoLink.trim()) {
+      alert("Paste YouTube link");
+      return;
     }
 
-    setLoading(false);
-  };
+    const videoId = extractVideoId(videoLink.trim());
 
-  // ================= ADD VIDEO =================
-  const handleAddVideo = async () => {
-    if (!videoLink) return alert("Enter video link");
-
-    await addDoc(collection(db, "videos"), {
-      url: videoLink,
-      createdAt: serverTimestamp(),
-    });
-
-    setVideoLink("");
-    fetchData();
-  };
-
-  // ================= DELETE IMAGE =================
-  const deleteImage = async (item) => {
-    if (!confirm("Delete this image?")) return;
+    if (!videoId) {
+      alert("Invalid YouTube link");
+      return;
+    }
 
     try {
-      if (item.storagePath) {
-        const fileRef = ref(storage, item.storagePath);
-        await deleteObject(fileRef);
-      }
+      await addDoc(collection(db, "videos"), {
+        videoId,
+        createdAt: new Date(),
+      });
 
-      await deleteDoc(doc(db, "gallery", item.id));
+      alert("Video added successfully");
+      setVideoLink("");
       fetchData();
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Video add error:", error);
+      alert("Failed to add video");
     }
   };
 
-  // ================= DELETE VIDEO =================
-  const deleteVideo = async (item) => {
-    if (!confirm("Delete this video?")) return;
+  // =========================
+  // Delete Video
+  // =========================
+  const deleteVideo = async (id) => {
+    try {
+      await deleteDoc(doc(db, "videos", id));
+      fetchData();
+    } catch (error) {
+      console.error("Delete video error:", error);
+    }
+  };
 
-    await deleteDoc(doc(db, "videos", item.id));
-    fetchData();
+  // =========================
+  // Delete Image
+  // =========================
+  const deleteImage = async (id, imageUrl) => {
+    try {
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+      await deleteDoc(doc(db, "gallery", id));
+      fetchData();
+    } catch (error) {
+      console.error("Delete image error:", error);
+    }
   };
 
   return (
-    <div className="space-y-16">
+    <div className="p-10 space-y-10 bg-black min-h-screen text-white">
+      <h1 className="text-3xl text-yellow-400 font-bold">
+        Admin Dashboard
+      </h1>
 
-      {/* ================= UPLOAD SECTION ================= */}
-      <div className="grid md:grid-cols-2 gap-8">
+      {/* ================= IMAGE UPLOAD ================= */}
+      <div className="bg-gray-900 p-6 rounded-xl">
+        <h2 className="text-xl text-yellow-400 mb-4">Upload Image</h2>
 
-        {/* Upload Image */}
-        <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-          <h2 className="text-yellow-400 text-xl mb-4">Upload Image</h2>
+        <input
+          type="file"
+          onChange={(e) => setFile(e.target.files[0])}
+          className="mb-4"
+        />
 
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files[0])}
-            className="mb-4"
-          />
-
-          <button
-            onClick={handleUploadImage}
-            className="bg-yellow-500 px-6 py-2 rounded-full text-black font-semibold"
-          >
-            {loading ? "Uploading..." : "Upload"}
-          </button>
-        </div>
-
-        {/* Add Video */}
-        <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-          <h2 className="text-yellow-400 text-xl mb-4">Add Video Link</h2>
-
-          <input
-            type="text"
-            value={videoLink}
-            onChange={(e) => setVideoLink(e.target.value)}
-            placeholder="Paste YouTube embed link"
-            className="w-full px-4 py-2 mb-4 bg-black border border-gray-700 rounded-lg text-white"
-          />
-
-          <button
-            onClick={handleAddVideo}
-            className="bg-yellow-500 px-6 py-2 rounded-full text-black font-semibold"
-          >
-            Add Video
-          </button>
-        </div>
+        <button
+          onClick={handleUploadImage}
+          className="bg-yellow-500 text-black px-6 py-2 rounded-full font-semibold"
+        >
+          {loading ? "Uploading..." : "Upload"}
+        </button>
       </div>
 
-      {/* ================= STATS ================= */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* ================= ADD VIDEO ================= */}
+      <div className="bg-gray-900 p-6 rounded-xl">
+        <h2 className="text-xl text-yellow-400 mb-4">Add Video Link</h2>
 
-        <div className="bg-gray-900 p-6 rounded-xl text-center border border-gray-800">
-          <h3 className="text-yellow-400">Total Images</h3>
-          <p className="text-4xl font-bold">{images.length}</p>
-        </div>
+        <input
+          type="text"
+          value={videoLink}
+          onChange={(e) => setVideoLink(e.target.value)}
+          placeholder="Paste YouTube link"
+          className="w-full px-4 py-2 mb-4 bg-black border border-gray-700 rounded-lg"
+        />
 
-        <div className="bg-gray-900 p-6 rounded-xl text-center border border-gray-800">
-          <h3 className="text-yellow-400">Total Videos</h3>
-          <p className="text-4xl font-bold">{videos.length}</p>
-        </div>
-
-        <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
-          <Bar
-            data={{
-              labels: ["Images", "Videos"],
-              datasets: [
-                {
-                  label: "Content Overview",
-                  data: [images.length, videos.length],
-                  backgroundColor: ["#facc15", "#38bdf8"],
-                },
-              ],
-            }}
-          />
-        </div>
-
+        <button
+          onClick={handleAddVideo}
+          className="bg-yellow-500 text-black px-6 py-2 rounded-full font-semibold"
+        >
+          Add Video
+        </button>
       </div>
 
-      {/* ================= IMAGE GALLERY ================= */}
+      {/* ================= VIDEO LIST ================= */}
       <div>
-        <h2 className="text-2xl text-yellow-400 mb-6">Image Gallery</h2>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {images.map((item) => (
-            <div key={item.id} className="relative group">
-              <img
-                src={item.imageUrl}
-                alt="Gallery"
-                className="w-full h-64 object-cover rounded-xl"
-              />
+        <h2 className="text-xl text-yellow-400 mb-4">Existing Videos</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          {videos.map((video) => (
+            <div key={video.id} className="bg-gray-900 p-4 rounded-xl">
+              <iframe
+                width="100%"
+                height="200"
+                src={`https://www.youtube.com/embed/${video.videoId}`}
+                allowFullScreen
+              ></iframe>
 
               <button
-                onClick={() => deleteImage(item)}
-                className="absolute top-2 right-2 bg-red-600 px-3 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition"
+                onClick={() => deleteVideo(video.id)}
+                className="mt-3 bg-red-600 px-4 py-1 rounded-full"
               >
                 Delete
               </button>
@@ -254,31 +222,27 @@ const convertToEmbed = (url) => {
         </div>
       </div>
 
-      {/* ================= VIDEO GALLERY ================= */}
-<div>
-  <h2 className="text-2xl text-yellow-400 mb-6">Video Gallery</h2>
+      {/* ================= IMAGE LIST ================= */}
+      <div>
+        <h2 className="text-xl text-yellow-400 mb-4">Gallery Images</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {images.map((img) => (
+            <div key={img.id} className="bg-gray-900 p-4 rounded-xl">
+              <img
+                src={img.imageUrl}
+                className="w-full h-48 object-cover rounded-lg"
+              />
 
-  <div className="grid md:grid-cols-2 gap-6">
-    {videos.map((item) => (
-      <div key={item.id} className="relative group">
-        <iframe
-          src={convertToEmbed(item.link)}
-          className="w-full h-64 rounded-xl"
-          allowFullScreen
-        />
-
-        <button
-          onClick={() => deleteVideo(item)}
-          className="absolute top-2 right-2 bg-red-600 px-3 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition"
-        >
-          Delete
-        </button>
+              <button
+                onClick={() => deleteImage(img.id, img.imageUrl)}
+                className="mt-3 bg-red-600 px-4 py-1 rounded-full"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
-</div>
-
-
     </div>
   );
 }

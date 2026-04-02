@@ -1,31 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+
+let adShown = false; // 🔥 GLOBAL LOCK
 
 export default function AdPopup() {
-  const [show, setShow] = useState(false);
+  const [showAd, setShowAd] = useState(false);
 
   useEffect(() => {
-    // show instantly
+    if (adShown) return; // 🚫 stop duplicate
+
+    adShown = true;
+
     const closed = localStorage.getItem("adClosed");
 
     if (!closed) {
-      setShow(true);
+      setShowAd(true);
     }
   }, []);
 
   const closeAd = () => {
-    setShow(false);
+    setShowAd(false);
     localStorage.setItem("adClosed", "true");
   };
 
-  if (!show) return null;
+  if (!showAd) return null;
 
   return (
     <div className="fixed bottom-4 left-0 right-0 flex justify-center z-[9999] px-3">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl relative overflow-hidden animate-fadeIn">
 
-        {/* Close */}
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl relative">
+
+        {/* CLOSE */}
         <button
           onClick={closeAd}
           className="absolute top-2 right-3 text-gray-500 text-lg"
@@ -33,44 +39,33 @@ export default function AdPopup() {
           ✕
         </button>
 
-        {/* Image */}
-        <a
-          href="https://amerispace.co.in/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="/ads/amerispace.png"
-            alt="Amerispace"
-            className="w-full h-40 object-contain p-3 cursor-pointer"
-          />
-        </a>
+        {/* IMAGE */}
+        <img
+          src="/ads/amerispace.png"
+          alt="Amerispace"
+          className="w-full h-36 object-contain cursor-pointer"
+          onClick={() => window.open("https://amerispace.co.in/", "_blank")}
+        />
 
-        {/* Content */}
-        <div className="px-4 pb-4 text-center">
-          <h2 className="font-semibold text-lg text-gray-800">
+        {/* TEXT */}
+        <div className="p-4 text-center">
+          <h2 className="font-bold text-gray-800">
             Amerispace Pvt. Ltd.
           </h2>
 
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600">
             Building Your Future, One Space at a Time
           </p>
 
-          <p className="text-xs text-gray-500 mt-2">
-            Premium Plots • Villas • Construction • Resorts
-          </p>
-
-          {/* Button */}
-          <a
-            href="https://amerispace.co.in/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => window.open("https://amerispace.co.in/", "_blank")}
+            className="mt-3 w-full py-2 rounded-lg text-white 
+            bg-gradient-to-r from-yellow-400 to-orange-500"
           >
-            <button className="mt-4 w-full py-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-medium">
-              Know More →
-            </button>
-          </a>
+            Know More →
+          </button>
         </div>
+
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/app/lib/firebase";
+import { db, storage } from "@/app/lib/firebase";
 import {
   collection,
   addDoc,
@@ -32,21 +32,36 @@ export default function GalleryAdmin() {
   }, []);
 
  const handleUpload = async () => {
-  if (!file) return alert("Select file");
+  if (!file) {
+    alert("Select file");
+    return;
+  }
 
   try {
-    console.log("Uploading...");
+    console.log("Uploading file...");
 
     const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
 
+    // 🔥 Upload
     await uploadBytes(storageRef, file);
 
+    console.log("Upload done");
+
+    // 🔥 Get URL
     const downloadURL = await getDownloadURL(storageRef);
 
-    console.log("URL:", downloadURL);
+    console.log("Download URL:", downloadURL);
 
+    // ❌ If this empty → problem
+    if (!downloadURL) {
+      alert("URL not generated");
+      return;
+    }
+
+    // 🔥 Save to Firestore
     await addDoc(collection(db, "gallery"), {
       imageUrl: downloadURL,
+      title: "image",
       createdAt: serverTimestamp(),
     });
 
@@ -59,6 +74,7 @@ export default function GalleryAdmin() {
     alert("Upload failed ❌");
   }
 };
+
   const handleDelete = async (id) => {
     await deleteDoc(doc(db, "gallery", id));
   };
