@@ -49,20 +49,37 @@ export default function GalleryPage() {
             <div className="flex justify-center">
               <div className="relative w-full max-w-4xl">
 
-                {/* Glow */}
-                <div className="absolute inset-0 bg-yellow-500 blur-3xl opacity-20 rounded-2xl"></div>
+              
 
                 {/* Frame */}
                 <div className="relative bg-gray-900 p-3 rounded-2xl shadow-2xl border border-yellow-500/20">
 
                   <div className="relative w-full pb-[56.25%] overflow-hidden rounded-xl">
 
-                    <iframe
-                      src={`https://www.youtube.com/embed/${video.videoId}`}
-                      className="absolute top-0 left-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
+                    <div className="flex justify-center">
+  <div className="w-full max-w-5xl group">
+
+    {/* Glow background */}
+    <div className="absolute blur-3xl opacity-30 bg-yellow-500 rounded-3xl w-full h-full group-hover:opacity-50 transition duration-500"></div>
+
+    {/* Frame */}
+    <div className="relative bg-gradient-to-br from-gray-900 to-black p-4 rounded-3xl border border-yellow-500/20 shadow-[0_0_40px_rgba(255,215,0,0.2)] group-hover:shadow-[0_0_60px_rgba(255,215,0,0.4)] transition duration-500">
+
+      {/* Video */}
+      <div className="relative w-full pb-[56.25%] overflow-hidden rounded-2xl">
+
+        <iframe
+          src={`https://www.youtube.com/embed/${video.videoId}?rel=0`}
+          className="absolute top-0 left-0 w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+
+      </div>
+
+    </div>
+  </div>
+</div>
 
                   </div>
                 </div>
@@ -70,7 +87,7 @@ export default function GalleryPage() {
             </div>
 
             {/* VIDEO TITLE */}
-            <h2 className="mt-6 text-lg md:text-xl text-yellow-300 font-semibold">
+            <h2 className="mt-6 text-xl md:text-2xl text-yellow-400 font-bold tracking-wide drop-shadow-lg">
               ATP SHIVARATRI 2026 SRI CHALLA LAKSHMI PRASAD GARU (APIIC DIRECTOR)
             </h2>
 
