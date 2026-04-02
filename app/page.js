@@ -13,9 +13,10 @@ import useNavbar from "./styles/useNavbar";
 import { GALLERY_ITEMS } from "./data/gallery";
 import ContactForm from "./components/ContactForm";
 import GallerySection from "./components/GallerySection";
-import VideosSection from "./components/VideosSection";
 import Initiatives from "./components/Initiatives";
+import VideosSection from "./components/VideosSection";
 import Link from "next/link";
+import { Import } from "lucide-react";
 
 
 

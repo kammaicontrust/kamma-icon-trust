@@ -11,10 +11,12 @@ export default function VideoSection() {
     const fetchVideos = async () => {
       const snapshot = await getDocs(collection(db, "videos"));
 
-      const data = snapshot.docs.map((doc) => ({
+      const data = snapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data(),
+        ...doc.data()
       }));
+
+      console.log(data); // 🔥 debug
 
       setVideos(data);
     };
@@ -25,16 +27,11 @@ export default function VideoSection() {
   return (
     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
       {videos.map((video) => (
-        <div key={video.id} className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden">
-          
-          <video controls className="w-full h-52 object-cover" poster={video.thumbnail}>
+        <div key={video.id} className="bg-white/10 rounded-xl overflow-hidden">
+          <video controls className="w-full h-52" poster={video.thumbnail}>
             <source src={video.url} type="video/mp4" />
           </video>
-
-          <div className="p-3 text-white">
-            {video.title}
-          </div>
-
+          <p className="text-white p-2">{video.title}</p>
         </div>
       ))}
     </div>
