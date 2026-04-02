@@ -1,37 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/app/lib/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 export default function VideoSection() {
   const [videos, setVideos] = useState([]);
 
   useEffect(() => {
     const fetchVideos = async () => {
-      const snapshot = await getDocs(collection(db, "videos"));
+      try {
+        const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
 
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-      console.log(data); // 🔥 debug
+        console.log("VIDEOS:", data); // 🔥 DEBUG
 
-      setVideos(data);
+        setVideos(data);
+      } catch (err) {
+        console.error("Video fetch error:", err);
+      }
     };
 
     fetchVideos();
   }, []);
 
+  if (videos.length === 0) {
+    return (
+      <p className="text-center text-gray-400 mt-10">
+        No videos yet
+      </p>
+    );
+  }
+
   return (
-    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div className="grid md:grid-cols-2 gap-6 p-4">
       {videos.map((video) => (
-        <div key={video.id} className="bg-white/10 rounded-xl overflow-hidden">
-          <video controls className="w-full h-52" poster={video.thumbnail}>
-            <source src={video.url} type="video/mp4" />
-          </video>
-          <p className="text-white p-2">{video.title}</p>
+        <div key={video.id} className="bg-gray-900 p-2 rounded-xl">
+          <iframe
+            width="100%"
+            height="250"
+            src={`https://www.youtube.com/embed/${video.videoId}`}
+            title="YouTube video"
+            allowFullScreen
+            className="rounded-xl"
+          ></iframe>
         </div>
       ))}
     </div>
