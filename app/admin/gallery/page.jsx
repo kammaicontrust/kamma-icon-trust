@@ -17,7 +17,6 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 export default function GalleryAdmin() {
   const [images, setImages] = useState([]);
   const [file, setFile] = useState(null);
-  const storage = getStorage();
 
   useEffect(() => {
     const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
@@ -32,21 +31,34 @@ export default function GalleryAdmin() {
     return () => unsubscribe();
   }, []);
 
-  const handleUpload = async () => {
-    if (!file) return;
+ const handleUpload = async () => {
+  if (!file) return alert("Select file");
 
-    const storageRef = ref(storage, `gallery/${Date.now()}-${file.name}`);
+  try {
+    console.log("Uploading...");
+
+    const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+
     await uploadBytes(storageRef, file);
+
     const downloadURL = await getDownloadURL(storageRef);
+
+    console.log("URL:", downloadURL);
 
     await addDoc(collection(db, "gallery"), {
       imageUrl: downloadURL,
       createdAt: serverTimestamp(),
     });
 
-    setFile(null);
-  };
+    alert("Image uploaded successfully 🔥");
 
+    setFile(null);
+
+  } catch (error) {
+    console.error("UPLOAD ERROR:", error);
+    alert("Upload failed ❌");
+  }
+};
   const handleDelete = async (id) => {
     await deleteDoc(doc(db, "gallery", id));
   };
