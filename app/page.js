@@ -301,12 +301,12 @@ export default function Home() {
 
 
 
-{/* <VideosSection /> */}
+<VideosSection />
 
-{/* SMOOTH DIVIDER (Videos → Gallery)
+{/* SMOOTH DIVIDER (Videos → Gallery) */}
 <div className="w-full h-20 bg-gradient-to-b from-black/0 to-black relative z-20"></div>
 
-<Divider /> */}
+<Divider />
 
 
 
