@@ -36,7 +36,7 @@ export default function GalleryPage() {
 
       {/* MAIN TITLE */}
       <h1 className="text-center text-4xl font-bold text-yellow-400 mb-16">
-        GALLERY
+        VIDEOS
       </h1>
 
       {/* VIDEOS */}
@@ -71,7 +71,7 @@ export default function GalleryPage() {
 
             {/* VIDEO TITLE */}
             <h2 className="mt-6 text-lg md:text-xl text-yellow-300 font-semibold">
-              ATP SHIVARATRI 2026 SRI CHALA LAKSHMI PRASAD GARU (APIIC DIRECTOR)
+              ATP SHIVARATRI 2026 SRI CHALLA LAKSHMI PRASAD GARU (APIIC DIRECTOR)
             </h2>
 
           </div>
