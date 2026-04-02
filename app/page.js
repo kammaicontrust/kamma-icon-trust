@@ -14,7 +14,7 @@ import { GALLERY_ITEMS } from "./data/gallery";
 import ContactForm from "./components/ContactForm";
 import GallerySection from "./components/GallerySection";
 import Initiatives from "./components/Initiatives";
-import VideosSection from "./components/VideosSection";
+import VideosSection from "app\components\VideosSection";
 import Link from "next/link";
 import { Import } from "lucide-react";
 
