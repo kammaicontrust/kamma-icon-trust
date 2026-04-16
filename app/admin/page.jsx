@@ -64,12 +64,14 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      const imageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+      const storagePath = `gallery/${Date.now()}_${file.name}`;
+      const imageRef = ref(storage, storagePath);
       await uploadBytes(imageRef, file);
       const downloadURL = await getDownloadURL(imageRef);
 
       await addDoc(collection(db, "gallery"), {
         imageUrl: downloadURL,
+        storagePath: storagePath,
         createdAt: new Date(),
       });
 
@@ -136,9 +138,9 @@ export default function AdminDashboard() {
   // =========================
   // Delete Image
   // =========================
-  const deleteImage = async (id, imageUrl) => {
+  const deleteImage = async (id, storagePath) => {
     try {
-      const imageRef = ref(storage, imageUrl);
+      const imageRef = ref(storage, storagePath);
       await deleteObject(imageRef);
       await deleteDoc(doc(db, "gallery", id));
       fetchData();
@@ -226,7 +228,7 @@ export default function AdminDashboard() {
               />
 
               <button
-                onClick={() => deleteImage(img.id, img.imageUrl)}
+                onClick={() => deleteImage(img.id, img.storagePath)}
                 className="mt-3 bg-red-600 px-4 py-1 rounded-full"
               >
                 Delete

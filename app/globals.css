@@ -464,7 +464,7 @@ body,
 .cursor-ring {
   width: 28px;
   height: 28px;
-  border: 1.5px solid white;
+  border: 1.5px solid black;
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -476,7 +476,7 @@ body,
 .cursor-dot {
   width: 6px;
   height: 6px;
-  background: white;
+  background: black;
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -708,7 +708,7 @@ button,
   position: fixed;
   width: 6px;
   height: 6px;
-  background: white;
+  background: black;
   border-radius: 50%;
   will-change: left, top;
 }
@@ -718,7 +718,7 @@ button,
   position: fixed;
   width: 32px;
   height: 32px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(0, 0, 0, 0.8);
   border-radius: 50%;
   opacity: 0.8;
   will-change: left, top, width, height, transform;

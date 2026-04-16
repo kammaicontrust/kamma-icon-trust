@@ -1,239 +1,697 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import { auth } from "@/app/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { auth, db, storage } from "@/app/lib/firebase";
+
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
+
+const steps = [
+  ["Birth Details", ["name", "gender", "dateOfBirth", "timeOfBirth", "placeOfBirth"]],
+  ["Tradition & Roots", ["maritalStatus", "religion", "caste", "gotra", "rashi"]],
+  ["Personal Profile", ["nakshatra", "manglik", "complexion", "bloodGroup", "height"]],
+  ["Education & Career", ["weight", "education", "occupation", "income", "propertyShare"]],
+  ["Family Details", ["fatherName", "fatherOccupation", "motherName", "motherOccupation", "siblings"]],
+  ["Contact & Finish", ["address", "contactNumber", "emailId"]],
+];
+
+const fields = {
+  name: { label: "Name", type: "text", placeholder: "Enter full name" },
+  gender: { label: "Gender", type: "select", options: ["Male", "Female", "Other"] },
+  dateOfBirth: { label: "Date of Birth", type: "date" },
+  timeOfBirth: { label: "Time of Birth", type: "time" },
+  placeOfBirth: { label: "Place of Birth", type: "text", placeholder: "Town / City / Village" },
+  maritalStatus: { label: "Marital Status", type: "select", options: ["Never Married", "Divorced", "Widowed"] },
+  religion: { label: "Religion", type: "text", placeholder: "Religion" },
+  caste: { label: "Caste", type: "text", placeholder: "Caste" },
+  gotra: { label: "Gotra", type: "text", placeholder: "Gotra" },
+  rashi: { label: "Rashi", type: "text", placeholder: "Rashi" },
+  nakshatra: { label: "Nakshatra", type: "text", placeholder: "Nakshatra" },
+  manglik: { label: "Manglik", type: "select", options: ["Yes", "No", "Don't Know"] },
+  complexion: { label: "Complexion", type: "text", placeholder: "Complexion" },
+  bloodGroup: { label: "Blood Group", type: "select", options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] },
+  height: { label: "Height", type: "text", placeholder: "e.g. 5 ft 8 in" },
+  weight: { label: "Weight", type: "text", placeholder: "e.g. 62 kg" },
+  education: { label: "Education", type: "text", placeholder: "Highest qualification" },
+  occupation: { label: "Occupation", type: "text", placeholder: "Occupation" },
+  income: { label: "Income", type: "text", placeholder: "Annual income" },
+  propertyShare: { label: "Property Share", type: "text", placeholder: "Property / assets details" },
+  fatherName: { label: "Father's Name", type: "text", placeholder: "Father's name" },
+  fatherOccupation: { label: "Father's Occupation", type: "text", placeholder: "Father's occupation" },
+  motherName: { label: "Mother's Name", type: "text", placeholder: "Mother's name" },
+  motherOccupation: { label: "Mother's Occupation", type: "text", placeholder: "Mother's occupation" },
+  siblings: { label: "Siblings (Brother / Sister)", type: "text", placeholder: "e.g. 1 Brother, 2 Sisters" },
+  address: { label: "Address", type: "textarea", placeholder: "Complete residential address" },
+  contactNumber: { label: "Contact Number", type: "tel", placeholder: "10-digit phone number" },
+  emailId: { label: "Email ID", type: "email", placeholder: "Email address" },
+};
+
+const initialForm = Object.fromEntries(Object.keys(fields).map((key) => [key, ""]));
+
+function validate(name, value) {
+  const clean = typeof value === "string" ? value.trim() : value;
+  if (!clean) return "This field is required.";
+  if (name === "contactNumber" && !/^\d{10}$/.test(String(clean))) return "Enter a valid 10-digit phone number.";
+  if (name === "emailId" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(clean))) return "Enter a valid email address.";
+  return "";
+}
+
+function stepErrors(stepIndex, formData) {
+  return steps[stepIndex][1].reduce((acc, name) => {
+    const error = validate(name, formData[name]);
+    if (error) acc[name] = error;
+    return acc;
+  }, {});
+}
+
+function InputField({ name, value, error, onChange, onBlur }) {
+  const field = fields[name];
+  const base = "w-full rounded-[1.2rem] border bg-white/85 px-4 py-3.5 text-[15px] text-stone-800 outline-none transition placeholder:text-rose-300";
+  const state = error
+    ? "border-rose-300 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+    : "border-amber-100 focus:border-amber-300 focus:ring-4 focus:ring-amber-100";
+
+  return (
+    <label className={`flex flex-col gap-2 ${field.type === "textarea" ? "md:col-span-2" : ""}`}>
+      <span className="text-sm font-medium uppercase tracking-[0.08em] text-rose-900/80">{field.label}</span>
+      {field.type === "select" ? (
+        <select value={value} onChange={(event) => onChange(name, event.target.value)} onBlur={() => onBlur(name)} className={`${base} ${state}`}>
+          <option value="">Select {field.label}</option>
+          {field.options.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      ) : field.type === "textarea" ? (
+        <textarea rows={4} value={value} onChange={(event) => onChange(name, event.target.value)} onBlur={() => onBlur(name)} placeholder={field.placeholder} className={`${base} ${state} resize-none`} />
+      ) : (
+        <input type={field.type} value={value} onChange={(event) => onChange(name, event.target.value)} onBlur={() => onBlur(name)} placeholder={field.placeholder} className={`${base} ${state}`} />
+      )}
+      <span className={`min-h-5 text-sm ${error ? "text-rose-600" : "text-transparent"}`}>{error || "."}</span>
+    </label>
+  );
+}
 
 export default function RegisterPage() {
+  const [step, setStep] = useState(0);
+  const [formData, setFormData] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [burst, setBurst] = useState(false);
+  const [tokenValue, setTokenValue] = useState("");
+  const [tokenError, setTokenError] = useState("");
+  const [tokenVerified, setTokenVerified] = useState(false);
+  const [verifyingToken, setVerifyingToken] = useState(false);
+  const [verifiedTokenId, setVerifiedTokenId] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [fileErrors, setFileErrors] = useState({});
 
-  const [step, setStep] = useState(1);
-  const [token, setToken] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
+  const totalSteps = steps.length;
+  const [stepTitle, stepFields] = steps[step];
+  const progress = ((step + 1) / totalSteps) * 100;
+  const chips = useMemo(
+    () => [formData.name || "Profile in progress", formData.education || "Education pending", formData.occupation || "Occupation pending"],
+    [formData.education, formData.name, formData.occupation]
+  );
 
-  const [name, setName] = useState("");
-  const [village, setVillage] = useState("");
-  const [gothram, setGothram] = useState("");
-  const [occupation, setOccupation] = useState("");
-  const [email, setEmail] = useState("");
-  const [dob, setDob] = useState("");
-  const [age, setAge] = useState("");
-
-  const [photoPreview, setPhotoPreview] = useState(null);
-
-  // recaptcha
   useEffect(() => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-        size: "invisible",
-      });
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      setUser(authUser);
+      setAuthReady(true);
+
+      if (!authUser) {
+        setTokenVerified(false);
+        setVerifiedTokenId("");
+        setTokenValue("");
+        return;
+      }
+
+      setFormData((current) => ({ ...current, emailId: current.emailId || authUser.email || "" }));
+
+      try {
+        await setDoc(
+          doc(db, "users", authUser.uid),
+          {
+            uid: authUser.uid,
+            email: authUser.email || "",
+            displayName: authUser.displayName || "",
+            photoURL: authUser.photoURL || "",
+            authProvider: "google",
+            lastLoginAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error("Failed to sync auth user", error);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // token verify
-  const verifyToken = () => {
-    if (token === "123456") {
-      setStep(2);
-    } else {
-      alert("Invalid Token");
-    }
-  };
-
-  // send otp
-  const sendOTP = async () => {
+  const handleLogin = async () => {
+    setSigningIn(true);
+    setSubmitError("");
     try {
-      const result = await signInWithPhoneNumber(auth, "+91" + mobile, window.recaptchaVerifier);
-      setConfirmationResult(result);
-      setStep(3);
-    } catch (e) {
-      alert(e.message);
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      setSubmitError(error.message || "Google sign-in failed.");
+    } finally {
+      setSigningIn(false);
     }
   };
 
-  // verify otp
-  const verifyOTP = async () => {
+  const handleLogout = async () => {
+    await signOut(auth);
+    setStep(0);
+    setErrors({});
+    setSuccess(false);
+    setSubmitError("");
+    setTokenError("");
+    setTokenVerified(false);
+    setVerifiedTokenId("");
+    setTokenValue("");
+    setProfileImage(null);
+    setResumeFile(null);
+    setFileErrors({});
+    setFormData(initialForm);
+  };
+
+  const updateField = (name, value) => {
+    setFormData((current) => ({ ...current, [name]: value }));
+    setErrors((current) => ({ ...current, [name]: validate(name, value) }));
+  };
+
+  const blurField = (name) => {
+    setErrors((current) => ({ ...current, [name]: validate(name, formData[name]) }));
+  };
+
+  const handleProfileImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setFileErrors((current) => ({ ...current, profileImage: "Please upload a valid image file." }));
+      return;
+    }
+    setProfileImage(file);
+    setFileErrors((current) => ({ ...current, profileImage: "" }));
+  };
+
+  const handleResumeChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      setFileErrors((current) => ({ ...current, resume: "Please upload a PDF resume." }));
+      return;
+    }
+    setResumeFile(file);
+    setFileErrors((current) => ({ ...current, resume: "" }));
+  };
+
+  const verifyToken = async () => {
+    const cleanToken = tokenValue.trim().toUpperCase();
+    if (!user) {
+      setTokenError("Please sign in with Google first.");
+      return;
+    }
+    if (!cleanToken) {
+      setTokenError("Please enter your token.");
+      return;
+    }
+
+    setVerifyingToken(true);
+    setTokenError("");
+
     try {
-      await confirmationResult.confirm(otp);
-      setStep(4);
-    } catch {
-      alert("Invalid OTP");
+      console.log("Token verification input:", cleanToken);
+
+      const tokenFieldQuery = query(
+        collection(db, "tokens"),
+        where("token", "==", cleanToken),
+        where("used", "==", false)
+      );
+
+      const tokenNumberFieldQuery = query(
+        collection(db, "tokens"),
+        where("tokenNumber", "==", cleanToken),
+        where("used", "==", false)
+      );
+
+      const [tokenSnapshot, tokenNumberSnapshot] = await Promise.all([
+        getDocs(tokenFieldQuery),
+        getDocs(tokenNumberFieldQuery),
+      ]);
+
+      const snapshot = !tokenSnapshot.empty ? tokenSnapshot : tokenNumberSnapshot;
+      console.log(
+        "Token verification query result:",
+        {
+          tokenFieldMatches: tokenSnapshot.docs.map((item) => ({ id: item.id, ...item.data() })),
+          tokenNumberFieldMatches: tokenNumberSnapshot.docs.map((item) => ({
+            id: item.id,
+            ...item.data(),
+          })),
+        }
+      );
+
+      if (snapshot.empty) {
+        setTokenError("Invalid token");
+        return;
+      }
+
+      const tokenDoc = snapshot.docs[0];
+      const tokenRef = doc(db, "tokens", tokenDoc.id);
+
+      await updateDoc(tokenRef, {
+        used: true,
+        usedBy: user.uid,
+        usedByEmail: user.email || "",
+        usedAt: serverTimestamp(),
+      });
+
+      setTokenValue(cleanToken);
+      setVerifiedTokenId(tokenDoc.id);
+      setTokenVerified(true);
+    } catch (error) {
+      console.error(error);
+      setTokenError(error.message || "Token verification failed. Please try again.");
+    } finally {
+      setVerifyingToken(false);
     }
   };
 
-  // dob → age
-  const handleDOB = (val) => {
-    setDob(val);
-    const birth = new Date(val);
-    const today = new Date();
-    setAge(today.getFullYear() - birth.getFullYear());
+  const nextStep = () => {
+    const currentErrors = stepErrors(step, formData);
+    if (Object.keys(currentErrors).length) {
+      setErrors((current) => ({ ...current, ...currentErrors }));
+      return;
+    }
+    setStep((current) => Math.min(current + 1, totalSteps - 1));
+  };
+
+  const uploadFileToStorage = async (folder, file) => {
+    const currentUser = auth.currentUser;
+    console.log("auth.currentUser before upload:", currentUser);
+    console.log("storage bucket before upload:", storage.app.options.storageBucket);
+
+    if (!currentUser) {
+      throw new Error("Please sign in before uploading files.");
+    }
+
+    const filePath = `${folder}/${currentUser.uid}/${Date.now()}-${file.name}`;
+    console.log(`Uploading ${folder} to:`, filePath);
+
+    const fileRef = ref(storage, filePath);
+    await uploadBytes(fileRef, file);
+    return getDownloadURL(fileRef);
+  };
+
+  const submit = async () => {
+    const allErrors = steps.reduce((acc, _, index) => ({ ...acc, ...stepErrors(index, formData) }), {});
+    const nextFileErrors = {
+      profileImage: profileImage ? "" : "Profile image is required.",
+      resume: resumeFile ? "" : "Resume PDF is required.",
+    };
+
+    if (Object.keys(allErrors).length || nextFileErrors.profileImage || nextFileErrors.resume) {
+      setErrors(allErrors);
+      setFileErrors(nextFileErrors);
+      const firstBadStep = steps.findIndex((entry) => entry[1].some((name) => allErrors[name]));
+      if (firstBadStep >= 0) setStep(firstBadStep);
+      return;
+    }
+
+    if (!user) {
+      setSubmitError("Please sign in with Google to continue.");
+      return;
+    }
+    if (!tokenVerified || !verifiedTokenId) {
+      setSubmitError("Please verify your token before accessing the form.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+    setBurst(true);
+
+    try {
+      const profile = Object.fromEntries(
+        Object.entries(formData).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value])
+      );
+
+      console.log("Current user before upload:", user);
+
+      if (!authReady || !user) {
+        throw new Error("Please wait for login to complete before submitting.");
+      }
+
+      const [profileImageUrl, resumeUrl] = await Promise.all([
+        uploadFileToStorage("images", profileImage),
+        uploadFileToStorage("resumes", resumeFile),
+      ]);
+
+      await setDoc(
+        doc(db, "registrations", user.uid),
+        {
+          uid: user.uid,
+          email: user.email || "",
+          registrationEmail: profile.emailId,
+          authProvider: "google",
+          tokenId: verifiedTokenId,
+          tokenValue: tokenValue.trim(),
+          profileCompleted: true,
+          submittedAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          profileImageUrl,
+          resumeUrl,
+          profile,
+        },
+        { merge: true }
+      );
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          registrationEmail: profile.emailId,
+          registrationCompleted: true,
+          registrationUpdatedAt: serverTimestamp(),
+          tokenId: verifiedTokenId,
+          profileImageUrl,
+          resumeUrl,
+        },
+        { merge: true }
+      );
+
+      setSuccess(true);
+    } catch (error) {
+      console.error(error);
+      setSubmitError(error.message || "Could not submit registration.");
+      setBurst(false);
+    } finally {
+      setSubmitting(false);
+      window.setTimeout(() => setBurst(false), 1200);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
+    <main className="relative min-h-screen overflow-hidden bg-[#fff7ef] text-stone-900">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,227,197,0.95),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(253,225,223,0.75),_transparent_28%),linear-gradient(180deg,_#fff9f4_0%,_#fff2e9_45%,_#fff8f1_100%)]" />
+      <div className="mandala absolute inset-0 opacity-60" />
+      <div className="floral absolute inset-x-0 top-0 h-28" />
+      <div className="floral absolute inset-x-0 bottom-0 h-28 rotate-180" />
 
-      {/* background */}
-      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/bg.webp')" }}></div>
-
-      {/* overlay */}
-      <div className="absolute inset-0 bg-black/60"></div>
-
-      {/* ring animation */}
-      <div className="ring"></div>
-
-      {/* card */}
-      <div className="relative z-10 w-[380px] p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
-
-        {/* STEP 1 */}
-        {step === 1 && (
-          <>
-            <label className="text-white text-sm">Token</label>
-            <input value={token} onChange={(e)=>setToken(e.target.value)} className="input" />
-            <button onClick={verifyToken} className="btn-yellow">Continue</button>
-          </>
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <>
-            <label className="text-white text-sm">Mobile</label>
-            <div className="flex">
-              <span className="prefix">+91</span>
-              <input value={mobile} onChange={(e)=>setMobile(e.target.value)} className="input no-left" />
+      <section className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:flex-row lg:items-start lg:px-8 lg:py-10">
+        <aside className="w-full lg:sticky lg:top-8 lg:max-w-md">
+          <div className="rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_20px_80px_rgba(155,92,63,0.12)] backdrop-blur-xl sm:p-8">
+            <div className="mb-6 flex items-center justify-between text-amber-700">
+              <span className="rounded-full border border-amber-200 bg-amber-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em]">Telugu Wedding</span>
+              <span className="bell text-2xl">۞</span>
             </div>
-            <button onClick={sendOTP} className="btn-green">Send OTP</button>
-          </>
-        )}
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-rose-700/80">Matrimonial Registration</p>
+            <h1 className="mt-4 font-serif text-4xl leading-tight text-rose-950 sm:text-5xl">A form that feels like a wedding invitation.</h1>
 
-        {/* STEP 3 */}
-        {step === 3 && (
-          <>
-            <label className="text-white text-sm">OTP</label>
-            <input value={otp} onChange={(e)=>setOtp(e.target.value)} className="input" />
-            <button onClick={verifyOTP} className="btn-blue">Verify</button>
-          </>
-        )}
+            <div className="mt-8 rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-[#fff8ef] via-[#fff2e9] to-[#ffe8ea] p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-rose-800/80">Progress</p>
+                <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-rose-700">{step + 1}/{totalSteps}</span>
+              </div>
+              <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/80">
+                <div className="h-full rounded-full bg-[linear-gradient(90deg,#e0b65c,#f18ca8,#e0b65c)] transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              <div className="mt-5 grid gap-3">
+                {steps.map(([title], index) => (
+                  <div key={title} className={`rounded-[1.1rem] border px-4 py-3 ${index === step ? "border-rose-200 bg-white/85 shadow-md" : index < step ? "border-amber-100 bg-amber-50/70" : "border-transparent bg-white/45"}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-rose-950">{title}</p>
+                      <span className="text-sm font-semibold text-amber-700">{index + 1}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-        {/* STEP 4 FORM */}
-        {step === 4 && (
-          <div className="space-y-2 text-white">
-
-            <input placeholder="Name" onChange={(e)=>setName(e.target.value)} className="input"/>
-            <input placeholder="Village" onChange={(e)=>setVillage(e.target.value)} className="input"/>
-            <input placeholder="Gothram" onChange={(e)=>setGothram(e.target.value)} className="input"/>
-            <input placeholder="Occupation" onChange={(e)=>setOccupation(e.target.value)} className="input"/>
-            <input placeholder="Email" onChange={(e)=>setEmail(e.target.value)} className="input"/>
-
-            <input type="date" onChange={(e)=>handleDOB(e.target.value)} className="input"/>
-            <input value={age} disabled className="input bg-gray-200"/>
-
-            <input type="file" onChange={(e)=>setPhotoPreview(URL.createObjectURL(e.target.files[0]))} className="input"/>
-
-            <button onClick={()=>setStep(5)} className="btn-pink">Preview</button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {chips.map((chip) => (
+                <span key={chip} className="rounded-full border border-white/70 bg-white/75 px-4 py-2 text-sm text-stone-600">{chip}</span>
+              ))}
+            </div>
           </div>
-        )}
+        </aside>
+        <section className="w-full flex-1">
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/75 shadow-[0_24px_90px_rgba(139,78,48,0.12)] backdrop-blur-xl">
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between px-6 pt-4 text-emerald-600/80 sm:px-8">
+              <span className="leaf">❦❦❦</span>
+              <span className="leaf">❦❦❦</span>
+            </div>
 
-        {/* STEP 5 PREVIEW */}
-        {step === 5 && (
-          <div className="text-white text-center">
-            <h3 className="mb-2">Preview</h3>
+            {!authReady ? (
+              <div className="flex min-h-[720px] items-center justify-center p-8">
+                <div className="h-14 w-14 animate-spin rounded-full border-4 border-amber-200 border-t-rose-400" />
+              </div>
+            ) : !user ? (
+              <div className="flex min-h-[720px] items-center justify-center p-6 sm:p-8">
+                <div className="w-full max-w-2xl rounded-[2rem] border border-amber-100 bg-[linear-gradient(145deg,rgba(255,249,242,0.96),rgba(255,240,236,0.94))] px-6 py-10 text-center shadow-[0_24px_80px_rgba(162,89,62,0.10)]">
+                  <div className="mb-6 flex items-center justify-center gap-4 text-4xl text-amber-500">
+                    <span className="bell">۞</span>
+                    <span>✿</span>
+                    <span className="bell" style={{ animationDelay: "0.2s" }}>۞</span>
+                  </div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.4em] text-rose-700/80">Google Sign-In Required</p>
+                  <h2 className="mt-4 font-serif text-4xl leading-tight text-rose-950 sm:text-5xl">Enter before the form opens.</h2>
+                  <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-stone-600">
+                    Sign in with Google first. Token verification happens immediately after sign-in before the registration form unlocks.
+                  </p>
 
-            {photoPreview && (
-              <img src={photoPreview} className="w-20 h-20 rounded-full mx-auto mb-2"/>
+                  <button type="button" onClick={handleLogin} disabled={signingIn} className="mt-10 inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-amber-200 bg-white px-8 py-4 text-base font-semibold text-stone-700 shadow-[0_18px_40px_rgba(170,102,70,0.12)] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-white shadow-sm">G</span>
+                    {signingIn ? "Signing in..." : "Continue with Google"}
+                  </button>
+
+                  {submitError ? <p className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{submitError}</p> : null}
+                </div>
+              </div>
+            ) : !tokenVerified ? (
+              <div className="flex min-h-[720px] items-center justify-center p-6 sm:p-8">
+                <div className="w-full max-w-2xl rounded-[2rem] border border-amber-100 bg-[linear-gradient(145deg,rgba(255,249,242,0.96),rgba(255,240,236,0.94))] px-6 py-10 text-center shadow-[0_24px_80px_rgba(162,89,62,0.10)]">
+                  <div className="mb-6 flex items-center justify-center gap-4 text-4xl text-amber-500">
+                    <span className="bell">۞</span>
+                    <span>✿</span>
+                    <span className="bell" style={{ animationDelay: "0.2s" }}>۞</span>
+                  </div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.4em] text-rose-700/80">Token Verification</p>
+                  <h2 className="mt-4 font-serif text-4xl leading-tight text-rose-950 sm:text-5xl">Enter your invitation token.</h2>
+                  <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-stone-600">
+                    Only valid unused tokens can unlock the matrimonial form. The token is marked as used immediately after successful verification.
+                  </p>
+
+                  <div className="mx-auto mt-8 max-w-md text-left">
+                    <label className="flex flex-col gap-2">
+                      <span className="text-sm font-medium uppercase tracking-[0.08em] text-rose-900/80">Registration Token</span>
+                      <input type="text" value={tokenValue} onChange={(event) => setTokenValue(event.target.value)} placeholder="Enter your token" className="w-full rounded-[1.2rem] border border-amber-100 bg-white/85 px-4 py-3.5 text-[15px] text-stone-800 outline-none transition placeholder:text-rose-300 focus:border-amber-300 focus:ring-4 focus:ring-amber-100" />
+                    </label>
+                    {tokenError ? <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{tokenError}</p> : null}
+                  </div>
+
+                  <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+                    <button type="button" onClick={verifyToken} disabled={verifyingToken} className="rounded-full bg-[linear-gradient(135deg,#f2d188,#e88db0)] px-8 py-3.5 font-semibold text-white transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-70">
+                      {verifyingToken ? "Verifying..." : "Verify Token"}
+                    </button>
+                    <button type="button" onClick={handleLogout} className="rounded-full border border-amber-200 bg-white px-6 py-3.5 font-semibold text-stone-700 transition hover:-translate-y-1">
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : success ? (
+              <div className="flex min-h-[720px] items-center justify-center p-6 sm:p-8">
+                <div className="w-full max-w-2xl rounded-[2rem] border border-amber-100 bg-[linear-gradient(145deg,rgba(255,251,245,0.98),rgba(255,239,235,0.96))] px-6 py-12 text-center shadow-[0_24px_80px_rgba(162,89,62,0.12)]">
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-rose-200 to-white text-5xl shadow-lg">❤</div>
+                  <h2 className="mt-8 font-serif text-4xl text-rose-950 sm:text-5xl">Registration Successful ❤️</h2>
+                  <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-stone-600">
+                    Your full registration, profile image, and resume have been saved securely.
+                  </p>
+                  <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+                    <button type="button" onClick={() => setSuccess(false)} className="rounded-full border border-amber-200 bg-white px-6 py-3.5 font-semibold text-stone-700 transition hover:-translate-y-1">
+                      Review Submission
+                    </button>
+                    <button type="button" onClick={handleLogout} className="rounded-full bg-[linear-gradient(135deg,#e0b65c,#f18ca8)] px-6 py-3.5 font-semibold text-white transition hover:-translate-y-1">
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 sm:p-8">
+                <div className="mb-8 flex flex-col gap-5 border-b border-amber-100/80 pb-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.28em] text-rose-700/80">Signed in with Google</p>
+                    <h2 className="mt-3 font-serif text-3xl text-rose-950 sm:text-4xl">{stepTitle}</h2>
+                    <p className="mt-3 max-w-2xl text-base leading-8 text-stone-600">Complete every field in this step before continuing.</p>
+                  </div>
+                  <div className="rounded-[1.5rem] border border-amber-100 bg-white/85 px-4 py-4">
+                    <p className="text-sm font-medium text-stone-500">Authenticated as</p>
+                    <p className="mt-1 font-semibold text-rose-900">{user.email}</p>
+                    <p className="mt-1 text-sm text-stone-500">Token verified</p>
+                    <button type="button" onClick={handleLogout} className="mt-3 text-sm font-semibold text-amber-700 hover:text-rose-700">Sign out</button>
+                  </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  <motion.div key={step} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.3, ease: "easeOut" }} className="grid gap-5 md:grid-cols-2">
+                    {stepFields.map((name) => (
+                      <InputField key={name} name={name} value={formData[name]} error={errors[name]} onChange={updateField} onBlur={blurField} />
+                    ))}
+                    {step === totalSteps - 1 ? (
+                      <>
+                        <label className="flex flex-col gap-2">
+                          <span className="text-sm font-medium uppercase tracking-[0.08em] text-rose-900/80">Profile Image</span>
+                          <input type="file" accept="image/*" onChange={handleProfileImageChange} className="w-full rounded-[1.2rem] border border-amber-100 bg-white/85 px-4 py-3.5 text-[15px] text-stone-800 outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[linear-gradient(135deg,#f2d188,#e88db0)] file:px-4 file:py-2 file:font-semibold file:text-white" />
+                          <span className={`min-h-5 text-sm ${fileErrors.profileImage ? "text-rose-600" : "text-stone-500"}`}>{fileErrors.profileImage || profileImage?.name || "Upload your profile image"}</span>
+                        </label>
+                        <label className="flex flex-col gap-2">
+                          <span className="text-sm font-medium uppercase tracking-[0.08em] text-rose-900/80">Resume (PDF)</span>
+                          <input type="file" accept="application/pdf,.pdf" onChange={handleResumeChange} className="w-full rounded-[1.2rem] border border-amber-100 bg-white/85 px-4 py-3.5 text-[15px] text-stone-800 outline-none transition file:mr-4 file:rounded-full file:border-0 file:bg-[linear-gradient(135deg,#f2d188,#e88db0)] file:px-4 file:py-2 file:font-semibold file:text-white" />
+                          <span className={`min-h-5 text-sm ${fileErrors.resume ? "text-rose-600" : "text-stone-500"}`}>{fileErrors.resume || resumeFile?.name || "Upload your PDF resume"}</span>
+                        </label>
+                      </>
+                    ) : null}
+                  </motion.div>
+                </AnimatePresence>
+
+                {submitError ? <p className="mt-6 rounded-[1.25rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{submitError}</p> : null}
+
+                <div className="mt-8 flex flex-col gap-4 border-t border-amber-100/80 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {step > 0 ? (
+                      <button type="button" onClick={() => setStep((current) => Math.max(current - 1, 0))} className="rounded-full border border-amber-200 bg-white px-5 py-3 font-semibold text-stone-700 transition hover:-translate-y-1">
+                        Previous
+                      </button>
+                    ) : null}
+                    <span className="text-sm font-medium uppercase tracking-[0.2em] text-stone-500">Step {step + 1} of {totalSteps}</span>
+                  </div>
+
+                  {step < totalSteps - 1 ? (
+                    <button type="button" onClick={nextStep} className="rounded-full bg-[linear-gradient(135deg,#f2d188,#e88db0)] px-6 py-3.5 font-semibold text-white transition hover:-translate-y-1">
+                      Save and Continue
+                    </button>
+                  ) : (
+                    <div className="relative">
+                      <div className="pointer-events-none absolute -top-7 left-1/2 flex -translate-x-1/2 gap-1.5 text-sm text-emerald-600">
+                        {["❦", "❦", "❦", "❦", "❦", "❦"].map((leafChar, index) => (
+                          <span key={`${leafChar}-${index}`} className="leaf" style={{ animationDelay: `${index * 0.12}s` }}>{leafChar}</span>
+                        ))}
+                      </div>
+                      <button type="button" onClick={submit} disabled={submitting} className="submit-btn relative inline-flex min-h-14 items-center justify-center overflow-hidden rounded-full px-8 py-3.5 font-semibold text-white shadow-[0_18px_36px_rgba(186,128,73,0.34)] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-75">
+                        <span className="relative z-10">{submitting ? "Submitting..." : "Submit Registration"}</span>
+                        <span className={`burst ${burst ? "active" : ""}`} aria-hidden="true">
+                          {Array.from({ length: 10 }).map((_, index) => (
+                            <span key={index} className="burst-item" style={{ "--x": `${Math.cos((index / 10) * Math.PI * 2) * 64}px`, "--y": `${Math.sin((index / 10) * Math.PI * 2) * 64}px`, animationDelay: `${index * 0.03}s` }}>
+                              {index % 2 === 0 ? "❤" : "✿"}
+                            </span>
+                          ))}
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
-
-            <p>{name}</p>
-            <p>{village}</p>
-            <p>{gothram}</p>
-            <p>{occupation}</p>
-            <p>{email}</p>
-            <p>{age}</p>
-
-            <button className="btn-green mt-2">Submit</button>
           </div>
-        )}
+        </section>
+      </section>
 
-      </div>
-
-      <div id="recaptcha-container"></div>
-
-      {/* styles */}
       <style jsx>{`
-        .input {
-          width: 100%;
-          padding: 10px;
-          border-radius: 10px;
-          margin-top: 6px;
-          background: white;
-          color: black;
+        .mandala {
+          background-image:
+            radial-gradient(circle at center, rgba(210, 161, 108, 0.11) 0, rgba(210, 161, 108, 0.11) 1px, transparent 1px),
+            radial-gradient(circle at center, rgba(232, 150, 165, 0.1) 0, rgba(232, 150, 165, 0.1) 1px, transparent 1px);
+          background-size: 36px 36px, 120px 120px;
+          background-position: 0 0, 18px 18px;
+          mask-image: radial-gradient(circle at center, black 36%, transparent 92%);
         }
-
-        .prefix {
-          background: white;
-          padding: 10px;
-          border-radius: 10px 0 0 10px;
-          color: black;
+        .floral {
+          background:
+            linear-gradient(90deg, transparent, rgba(250, 225, 184, 0.9), transparent),
+            repeating-linear-gradient(90deg, transparent 0 28px, rgba(233, 176, 130, 0.18) 28px 40px, transparent 40px 68px);
         }
-
-        .no-left {
-          border-radius: 0 10px 10px 0;
+        .bell {
+          animation: bell 2.6s ease-in-out infinite;
+          display: inline-block;
+          transform-origin: top center;
         }
-
-        .btn-yellow {
-          width: 100%;
-          margin-top: 10px;
-          padding: 10px;
-          background: #facc15;
-          border-radius: 10px;
+        .leaf {
+          animation: leaf 2.4s ease-in-out infinite;
+          display: inline-block;
         }
-
-        .btn-green {
-          width: 100%;
-          margin-top: 10px;
-          padding: 10px;
-          background: #22c55e;
-          color: white;
-          border-radius: 10px;
+        .submit-btn {
+          background: linear-gradient(135deg, #d8aa4e, #ef92a7 55%, #e6be65);
         }
-
-        .btn-blue {
-          width: 100%;
-          margin-top: 10px;
-          padding: 10px;
-          background: #3b82f6;
-          color: white;
-          border-radius: 10px;
-        }
-
-        .btn-pink {
-          width: 100%;
-          margin-top: 10px;
-          padding: 10px;
-          background: #ec4899;
-          color: white;
-          border-radius: 10px;
-        }
-
-        /* ring */
-        .ring {
+        .submit-btn::before {
+          content: "";
           position: absolute;
-          width: 120px;
-          height: 120px;
-          border: 4px solid gold;
-          border-radius: 50%;
-          top: 15%;
-          left: 10%;
-          animation: float 4s infinite ease-in-out;
-          box-shadow: 0 0 20px gold;
+          inset: 1px;
+          border-radius: 999px;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent 55%);
         }
-
-        @keyframes float {
-          0% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-          100% { transform: translateY(0px) rotate(360deg); }
+        .burst {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+        .burst-item {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          font-size: 1rem;
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.2);
+        }
+        .burst.active .burst-item {
+          animation: burst 0.95s ease-out forwards;
+        }
+        @keyframes bell {
+          0%, 100% { transform: rotate(0deg); }
+          15% { transform: rotate(7deg); }
+          30% { transform: rotate(-6deg); }
+          45% { transform: rotate(4deg); }
+          60% { transform: rotate(-3deg); }
+        }
+        @keyframes leaf {
+          0%, 100% { transform: translateY(0px); opacity: 0.95; }
+          50% { transform: translateY(-4px); opacity: 0.65; }
+        }
+        @keyframes burst {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+          35% { opacity: 1; }
+          100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.2); }
         }
       `}</style>
-
-    </div>
+    </main>
   );
 }

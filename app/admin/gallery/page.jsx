@@ -12,7 +12,7 @@ import {
   query,
   onSnapshot,
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 export default function GalleryAdmin() {
   const [images, setImages] = useState([]);
@@ -40,7 +40,8 @@ export default function GalleryAdmin() {
   try {
     console.log("Uploading file...");
 
-    const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+    const storagePath = `gallery/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, storagePath);
 
     // 🔥 Upload
     await uploadBytes(storageRef, file);
@@ -61,6 +62,7 @@ export default function GalleryAdmin() {
     // 🔥 Save to Firestore
     await addDoc(collection(db, "gallery"), {
       imageUrl: downloadURL,
+      storagePath: storagePath,
       title: "image",
       createdAt: serverTimestamp(),
     });
@@ -75,8 +77,17 @@ export default function GalleryAdmin() {
   }
 };
 
-  const handleDelete = async (id) => {
-    await deleteDoc(doc(db, "gallery", id));
+  const handleDelete = async (id, storagePath) => {
+    try {
+      if (storagePath) {
+        const imageRef = ref(storage, storagePath);
+        await deleteObject(imageRef);
+      }
+      await deleteDoc(doc(db, "gallery", id));
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete image");
+    }
   };
 
   return (
@@ -117,7 +128,7 @@ export default function GalleryAdmin() {
             />
 
             <button
-              onClick={() => handleDelete(img.id)}
+              onClick={() => handleDelete(img.id, img.storagePath)}
               className="w-full py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-semibold transition"
             >
               Delete

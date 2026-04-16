@@ -14,7 +14,8 @@ import { GALLERY_ITEMS } from "./data/gallery";
 import ContactForm from "./components/ContactForm";
 import GallerySection from "./components/GallerySection";
 import Initiatives from "./components/Initiatives";
-import VideosSection from "app\components\VideosSection";
+import VideosSection from "./components/VideosSection";
+import register from "./register/page";
 import Link from "next/link";
 import { Import } from "lucide-react";
 
@@ -119,6 +120,7 @@ export default function Home() {
   <a href="#initiatives" onClick={toggleMenu} className="nav-link text-yellow-500">Initiatives</a>
   <a href="#activities" onClick={toggleMenu} className="nav-link text-yellow-500">Activities</a>
   <a href="#contact" onClick={toggleMenu} className="nav-link text-yellow-500">Support</a>
+  <a href="#register" onClick={toggleMenu} className="nav-link text-yellow-500">Register</a>
 </div>
 
 
@@ -173,21 +175,23 @@ export default function Home() {
 
       <div className="mt-10 flex justify-center gap-6 fade-up delay-4">
 
+        <Link href="/register">
+          <button className="btn-gold border border-yellow-600 px-8 py-3 rounded-md hover:bg-yellow-600 hover:text-black transition-all duration-300 cursor-pointer transform hover:scale-105">
+            Register
+          </button>
+        </Link>
 
+        <Link href="/profiles">
+          <button className="btn-gold border border-yellow-600 px-8 py-3 rounded-md hover:bg-yellow-600 hover:text-black transition-all duration-300 cursor-pointer transform hover:scale-105">
+            View Profiles
+          </button>
+        </Link>
 
-
-  
-  <button className="btn-gold border border-yellow-600 px-8 py-3 rounded-md hover:bg-yellow-600 hover:text-black transition">
-    EXPLORE MORE
-  </button>
-
-  <button
-  onClick={() => document.getElementById("donate").scrollIntoView({ behavior: "smooth" })}
-  className="btn-gold border border-yellow-600 px-8 py-3 rounded-md hover:bg-yellow-600 hover:text-black transition">
-  DONATE NOW
-</button>
-
-
+        <button
+          onClick={() => document.getElementById("donate").scrollIntoView({ behavior: "smooth" })}
+          className="btn-gold border border-yellow-600 px-8 py-3 rounded-md hover:bg-yellow-600 hover:text-black transition-all duration-300 cursor-pointer transform hover:scale-105">
+          DONATE NOW
+        </button>
 
       </div>
     </div>

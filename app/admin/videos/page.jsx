@@ -15,10 +15,6 @@ export default function VideosAdmin() {
   const [link, setLink] = useState("");
   const [videos, setVideos] = useState([]);
 
-  useEffect(() => {
-    loadVideos();
-  }, []);
-
   async function loadVideos() {
     const snapshot = await getDocs(collection(db, "videos"));
     const data = snapshot.docs.map((doc) => ({
@@ -27,6 +23,10 @@ export default function VideosAdmin() {
     }));
     setVideos(data);
   }
+
+  useEffect(() => {
+    loadVideos();
+  }, []);
 
   async function addVideo() {
     if (!link.trim()) return alert("Paste YouTube link");
