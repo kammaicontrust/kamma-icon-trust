@@ -1,150 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { db } from "@/app/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import Image from "next/image";
-import PremiumGallery from "./PremiumGallery";
 
-
+const fadeUp = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const cardFade = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] } } };
 
 export default function GallerySection() {
   const [images, setImages] = useState([]);
-  const [current, setCurrent] = useState(0);
-
-  const [viewerOpen, setViewerOpen] = useState(false);
-const [viewerIndex, setViewerIndex] = useState(0);
-
-
 
   useEffect(() => {
     async function fetchImages() {
-      const q = query(
-        collection(db, "gallery"),
-        orderBy("createdAt", "desc")
-      );
+      const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setImages(data);
+      setImages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     }
-
     fetchImages();
   }, []);
 
-  function prevSlide() {
-    setCurrent((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
-  }
-
-  function nextSlide() {
-    setCurrent((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
-  }
+  if (images.length === 0) return null;
 
   return (
-    <section
-      id="gallery"
-      className="py-28 bg-black text-white overflow-hidden"
-    >
-      <h2 className="text-4xl font-bold text-center text-yellow-500 mb-16 tracking-wide">
-        GALLERY
-      </h2>
+    <section id="gallery" className="bg-white px-6 py-32 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <motion.div className="mb-16 text-center" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#D4882F]/60">Our Work in Action</p>
+          <h2 className="mt-3 text-[2.1rem] font-extrabold tracking-[-0.015em] text-[#0A1F44] sm:text-[2.8rem]">GALLERY</h2>
+          <div className="mx-auto mt-6 h-[2px] w-12 rounded-full bg-gradient-to-r from-[#D4882F] to-[#D4882F]/40" />
+        </motion.div>
 
-      <div className="relative flex items-center justify-center">
-
-        {/* LEFT BUTTON */}
-        <button
-  onClick={prevSlide}
-  className="absolute left-2 md:left-8 z-20"
->
-  <div className="relative w-14 h-14 flex items-center justify-center
-  rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600
-  shadow-lg shadow-yellow-500/30
-  transition-all duration-300 group-hover:scale-110">
-
-    <span className="text-black text-2xl font-bold transition-all duration-300 group-hover:-translate-x-1">
-      ‹
-    </span>
-
-    <div className="absolute inset-0 rounded-full
-      bg-yellow-400 blur-xl opacity-0
-      group-hover:opacity-40 transition-all duration-300">
-    </div>
-  </div>
-</button>
-
-
-        {/* SLIDER */}
-       <div className="relative flex items-center justify-center w-full max-w-[900px] mx-auto h-[420px] md:h-[480px] perspective-1000">
-
-          {images.map((img, index) => {
-            const position = index - current;
-
-            return (
-              <div
-                key={img.id}
-                onClick={() => {
-                  setViewerIndex(index);
-                  setViewerOpen(true);
-
-
-                }}
-                className={`absolute transition-all duration-700 ease-in-out rounded-3xl overflow-hidden shadow-2xl
-                ${
-                  position === 0
-                    ? "z-10 scale-100 translate-x-0 rotate-0"
-                    : position === -1
-                    ? "z-0 scale-90 -translate-x-[280px] -rotate-6 opacity-70"
-                    : position === 1
-                    ? "z-0 scale-90 translate-x-[280px] rotate-6 opacity-70"
-                    : "opacity-0 scale-75"
-                }`}
-              >
-                <div className="w-[300px] md:w-[360px] lg:w-[420px] h-[360px] md:h-[400px] lg:h-[420px] relative bg-black flex items-center justify-center">
-
-                  <Image
-                    src={img.imageUrl}
-                    alt="Gallery Image"
-                    fill
-                    sizes="(max-width:768px) 300px,
-                           (max-width:1024px) 360px,
-                           420px"
-                    className="object-contain rounded-3xl"
-                    priority={position === 0}
-                  />
-
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* RIGHT BUTTON */}
-        <button
-  onClick={nextSlide}
-  className="absolute right-2 md:right-8 z-20"
->
-  <div className="relative w-14 h-14 flex items-center justify-center
-  rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600
-  shadow-lg shadow-yellow-500/30
-  transition-all duration-300 group-hover:scale-110">
-
-    <span className="text-black text-2xl font-bold transition-all duration-300 group-hover:translate-x-1">
-      ›
-    </span>
-
-    <div className="absolute inset-0 rounded-full
-      bg-yellow-400 blur-xl opacity-0
-      group-hover:opacity-40 transition-all duration-300">
-    </div>
-  </div>
-</button>
-
+        <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.08 }}>
+          {images.map((img) => (
+            <motion.div key={img.id} variants={cardFade} className="group relative h-[300px] overflow-hidden rounded-2xl border border-[#0A1F44]/[0.04] shadow-[0_1px_3px_rgba(10,31,68,0.04),0_4px_16px_rgba(10,31,68,0.03)]">
+              <Image src={img.imageUrl} alt="Gallery Image" fill sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

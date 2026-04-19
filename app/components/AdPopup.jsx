@@ -5,15 +5,15 @@ import { useState, useEffect } from "react";
 let adShown = false; // 🔥 GLOBAL LOCK
 
 export default function AdPopup() {
-  const [showAd, setShowAd] = useState(() => {
-    if (typeof window === "undefined") return false;
-    if (adShown) return false;
-    const closed = localStorage.getItem("adClosed");
-    return !closed;
-  });
+  const [showAd, setShowAd] = useState(false);
 
   useEffect(() => {
+    if (adShown) return;
     adShown = true;
+    const closed = localStorage.getItem("adClosed");
+    if (!closed) {
+      setShowAd(true);
+    }
   }, []);
 
   const closeAd = () => {
