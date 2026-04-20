@@ -30,9 +30,9 @@ export default function LottieLoader() {
               <div className="wave-item color-1"></div>
               <div className="wave-item color-2"></div>
               <div className="wave-item color-3"></div>
-              <div className="wave-item color-4"></div>
-              <div className="wave-item color-5 center"></div>
-              <div className="wave-item color-4"></div>
+              <div className="wave-item color-saffron"></div>
+              <div className="wave-item color-white"></div>
+              <div className="wave-item color-green"></div>
               <div className="wave-item color-3"></div>
               <div className="wave-item color-2"></div>
               <div className="wave-item color-1"></div>

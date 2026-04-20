@@ -114,8 +114,9 @@ button, .button { touch-action: manipulation; }
 .color-1 { background-color: #0A1F44; z-index: 1; animation-name: pulseWidth1; animation-delay: 0s; }
 .color-2 { background-color: #183569; z-index: 2; animation-name: pulseWidth2; animation-delay: 0.1s; }
 .color-3 { background-color: #2A7B3A; z-index: 3; animation-name: pulseWidth3; animation-delay: 0.2s; }
-.color-4 { background-color: #D4882F; z-index: 4; animation-name: pulseWidth4; animation-delay: 0.3s; }
-.color-5 { background-color: #F2A955; z-index: 5; animation-name: pulseWidth5; animation-delay: 0.4s; }
+.color-saffron { background-color: #FF9933; z-index: 4; animation-name: pulseWidth4; animation-delay: 0.3s; }
+.color-white { background-color: #FFFFFF; border: 1px solid rgba(10,31,68,0.1); z-index: 5; animation-name: pulseWidth5; animation-delay: 0.4s; }
+.color-green { background-color: #138808; z-index: 4; animation-name: pulseWidth4; animation-delay: 0.3s; }
 
 @keyframes pulseWidth1 { 0% { width: 20px; } 100% { width: 80px; } }
 @keyframes pulseWidth2 { 0% { width: 15px; } 100% { width: 60px; } }
