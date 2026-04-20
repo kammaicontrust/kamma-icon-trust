@@ -114,7 +114,7 @@ export default function Home() {
               src="/gallery/logo.png"
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.22] sm:h-[700px] sm:w-[700px] lg:h-[750px] lg:w-[750px]"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.06] sm:h-[600px] sm:w-[600px] lg:h-[700px] lg:w-[700px]"
             />
             <motion.h1 variants={cardFade} className="relative text-[3.2rem] font-extrabold leading-[1.06] tracking-[-0.02em] text-[#0A1F44] sm:text-7xl lg:text-[5.5rem]">
               KAMMA{" "}
