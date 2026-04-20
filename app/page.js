@@ -55,7 +55,7 @@ export default function Home() {
   const toggleMenu = () => setMenuOpen((o) => !o);
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] font-['Inter',system-ui,sans-serif] text-[#0A1F44] antialiased">
+    <main className="min-h-screen overflow-x-hidden bg-[#F7F8FA] font-['Inter',system-ui,sans-serif] text-[#0A1F44] antialiased">
 
       {/* ──── NAVBAR ──── */}
       <nav className={`fixed left-0 top-0 z-50 w-full transition-all duration-300 ${scrolled ? "bg-white/95 py-3.5 shadow-[0_1px_0_rgba(10,31,68,0.04),0_4px_16px_rgba(10,31,68,0.03)] backdrop-blur-xl" : "bg-transparent py-5"}`}>
@@ -114,16 +114,16 @@ export default function Home() {
               src="/gallery/logo.png"
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.06] sm:h-[600px] sm:w-[600px] lg:h-[700px] lg:w-[700px]"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.06] sm:h-[450px] sm:w-[450px] lg:h-[600px] lg:w-[600px]"
             />
-            <motion.h1 variants={cardFade} className="relative text-[3.2rem] font-extrabold leading-[1.06] tracking-[-0.02em] text-[#0A1F44] sm:text-7xl lg:text-[5.5rem]">
+            <motion.h1 variants={cardFade} className="relative text-[2.5rem] font-extrabold leading-[1.06] tracking-[-0.02em] text-[#0A1F44] sm:text-7xl lg:text-[5.5rem]">
               KAMMA{" "}
               <span className="bg-gradient-to-r from-[#D4882F] to-[#B87025] bg-clip-text text-transparent">ICON</span>{" "}
               TRUST
             </motion.h1>
           </div>
 
-          <motion.p variants={cardFade} className="mx-auto mt-8 max-w-lg text-[17px] leading-[1.75] text-[#0A1F44]/45">
+          <motion.p variants={cardFade} className="mx-auto mt-8 max-w-lg px-2 text-[15px] leading-[1.75] text-[#0A1F44]/45 sm:px-0 sm:text-[17px]">
             Empowering communities through education, healthcare, women empowerment, and sustainable development across India.
           </motion.p>
 
@@ -265,7 +265,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="rounded-2xl border border-[#0A1F44]/[0.04] bg-white p-6 shadow-[0_1px_3px_rgba(10,31,68,0.04),0_6px_24px_rgba(10,31,68,0.03)]">
                     <div className="flex gap-4">
                       <Phone className="mt-0.5 shrink-0 text-[#D4882F]/60" size={20} />
@@ -280,7 +280,7 @@ export default function Home() {
                       <Mail className="mt-0.5 shrink-0 text-[#2A7B3A]/60" size={20} />
                       <div>
                         <span className="text-[14px] font-semibold text-[#0A1F44]">Email</span>
-                        <p className="mt-1.5 text-[14px] text-[#0A1F44]/42">kammaicontrust@email.com</p>
+                        <p className="mt-1.5 truncate text-[14px] text-[#0A1F44]/42">kammaicontrust@email.com</p>
                       </div>
                     </div>
                   </div>
