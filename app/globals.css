@@ -75,15 +75,15 @@ button, .button { touch-action: manipulation; }
   display: flex; justify-content: center; align-items: center;
   z-index: 9999; transition: opacity 0.6s ease;
 }
-.fade-out { opacity: 0; }
+.fade-out { opacity: 0; pointer-events: none; }
 .loader-content {
   display: flex; flex-direction: column;
-  align-items: center; gap: 24px; text-align: center;
+  align-items: center; gap: 40px; text-align: center;
 }
-.loader-animation { width: 300px; height: 300px; }
 .loader-title {
-  color: var(--navy); font-size: 20px;
-  letter-spacing: 6px; font-weight: 600;
+  color: var(--navy); font-size: 14px;
+  letter-spacing: 8px; font-weight: 600;
+  text-transform: uppercase; opacity: 0.5;
 }
 .logo-reveal { display: flex; flex-direction: column; align-items: center; }
 .reveal-logo { width: 100px; margin-bottom: 20px; }
@@ -91,7 +91,44 @@ button, .button { touch-action: manipulation; }
   color: var(--navy); letter-spacing: 6px;
   font-size: 24px; font-weight: 600;
 }
+
+/* ===== FIGMA WAVE ANIMATION ===== */
+.figma-wave-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+}
+
+.wave-item {
+  height: 60px;
+  border-radius: 30px;
+  margin: 0 -8px; /* Negative margin for overlap */
+  position: relative;
+  animation-duration: 1.2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+}
+
+.color-1 { background-color: #8B1C1C; z-index: 1; animation-name: pulseWidth1; animation-delay: 0s; }
+.color-2 { background-color: #E62314; z-index: 2; animation-name: pulseWidth2; animation-delay: 0.1s; }
+.color-3 { background-color: #F7770F; z-index: 3; animation-name: pulseWidth3; animation-delay: 0.2s; }
+.color-4 { background-color: #FBB202; z-index: 4; animation-name: pulseWidth4; animation-delay: 0.3s; }
+.color-5 { background-color: #00B3E6; z-index: 5; animation-name: pulseWidth5; animation-delay: 0.4s; }
+
+@keyframes pulseWidth1 { 0% { width: 15px; } 100% { width: 60px; } }
+@keyframes pulseWidth2 { 0% { width: 12px; } 100% { width: 45px; } }
+@keyframes pulseWidth3 { 0% { width: 10px; } 100% { width: 30px; } }
+@keyframes pulseWidth4 { 0% { width: 8px;  } 100% { width: 20px; } }
+@keyframes pulseWidth5 { 0% { width: 5px;  } 100% { width: 12px; } }
+
 @media (max-width: 768px) {
-  .loader-animation { width: 240px; height: 240px; }
-  .loader-title { font-size: 18px; }
+  .wave-item { height: 40px; border-radius: 20px; margin: 0 -5px; }
+  @keyframes pulseWidth1 { 0% { width: 10px; } 100% { width: 40px; } }
+  @keyframes pulseWidth2 { 0% { width: 8px; } 100% { width: 30px; } }
+  @keyframes pulseWidth3 { 0% { width: 6px; } 100% { width: 20px; } }
+  @keyframes pulseWidth4 { 0% { width: 4px; } 100% { width: 14px; } }
+  @keyframes pulseWidth5 { 0% { width: 3px; } 100% { width: 8px; } }
+  .loader-title { font-size: 12px; letter-spacing: 6px; }
 }
