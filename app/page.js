@@ -109,11 +109,19 @@ export default function Home() {
             A CHARITABLE TRUST
           </motion.p>
 
-          <motion.h1 variants={cardFade} className="text-[3.2rem] font-extrabold leading-[1.06] tracking-[-0.02em] text-[#0A1F44] sm:text-7xl lg:text-[5.5rem]">
-            KAMMA{" "}
-            <span className="bg-gradient-to-r from-[#D4882F] to-[#B87025] bg-clip-text text-transparent">ICON</span>{" "}
-            TRUST
-          </motion.h1>
+          <div className="relative">
+            <img
+              src="/gallery/logo.png"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.06] sm:h-[360px] sm:w-[360px] lg:h-[420px] lg:w-[420px]"
+            />
+            <motion.h1 variants={cardFade} className="relative text-[3.2rem] font-extrabold leading-[1.06] tracking-[-0.02em] text-[#0A1F44] sm:text-7xl lg:text-[5.5rem]">
+              KAMMA{" "}
+              <span className="bg-gradient-to-r from-[#D4882F] to-[#B87025] bg-clip-text text-transparent">ICON</span>{" "}
+              TRUST
+            </motion.h1>
+          </div>
 
           <motion.p variants={cardFade} className="mx-auto mt-8 max-w-lg text-[17px] leading-[1.75] text-[#0A1F44]/45">
             Empowering communities through education, healthcare, women empowerment, and sustainable development across India.
