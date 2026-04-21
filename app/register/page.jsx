@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { DotLottie } from '@lottiefiles/dotlottie-web';
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -129,6 +130,7 @@ export default function RegisterPage() {
   const [profileImage, setProfileImage] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [fileErrors, setFileErrors] = useState({});
+  const canvasRef = useRef(null);
 
   const totalSteps = steps.length;
   const [stepTitle, stepFields] = steps[step];
@@ -172,6 +174,23 @@ export default function RegisterPage() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    let dotLottie = null;
+    if (submitting && canvasRef.current) {
+      dotLottie = new DotLottie({
+        autoplay: true,
+        loop: true,
+        canvas: canvasRef.current,
+        src: "https://lottie.host/bcc64836-d5f2-4b3d-89f8-22261c93a970/f9Tx2HLyHb.lottie",
+      });
+    }
+    return () => {
+      if (dotLottie) {
+        dotLottie.destroy();
+      }
+    };
+  }, [submitting]);
 
   const handleLogin = async () => {
     setSigningIn(true);
@@ -611,11 +630,7 @@ export default function RegisterPage() {
                         <span className="relative z-10 flex items-center justify-center">
                           {submitting ? (
                             <div className="flex items-center gap-2">
-                              <iframe 
-                                src="https://lottie.host/embed/20627f0f-53d5-4592-b1bc-2dfbe181352b" 
-                                className="w-10 h-10 border-none pointer-events-none scale-150"
-                                title="Loading Animation"
-                              />
+                              <canvas ref={canvasRef} style={{ width: "40px", height: "40px" }}></canvas>
                             </div>
                           ) : (
                             "Submit Registration"
@@ -623,12 +638,13 @@ export default function RegisterPage() {
                         </span>
                         {!submitting && (
                           <span className={`burst ${burst ? "active" : ""}`} aria-hidden="true">
-                          {Array.from({ length: 10 }).map((_, index) => (
-                            <span key={index} className="burst-item" style={{ "--x": `${Math.cos((index / 10) * Math.PI * 2) * 64}px`, "--y": `${Math.sin((index / 10) * Math.PI * 2) * 64}px`, animationDelay: `${index * 0.03}s` }}>
-                              {index % 2 === 0 ? "❤" : "✿"}
-                            </span>
-                          ))}
-                        </span>
+                            {Array.from({ length: 10 }).map((_, index) => (
+                              <span key={index} className="burst-item" style={{ "--x": `${Math.cos((index / 10) * Math.PI * 2) * 64}px`, "--y": `${Math.sin((index / 10) * Math.PI * 2) * 64}px`, animationDelay: `${index * 0.03}s` }}>
+                                {index % 2 === 0 ? "❤" : "✿"}
+                              </span>
+                            ))}
+                          </span>
+                        )}
                       </button>
                     </div>
                   )}
