@@ -608,8 +608,21 @@ export default function RegisterPage() {
                         ))}
                       </div>
                       <button type="button" onClick={submit} disabled={submitting} className="submit-btn relative inline-flex min-h-14 items-center justify-center overflow-hidden rounded-full px-8 py-3.5 font-semibold text-white shadow-[0_18px_36px_rgba(186,128,73,0.34)] transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-75">
-                        <span className="relative z-10">{submitting ? "Submitting..." : "Submit Registration"}</span>
-                        <span className={`burst ${burst ? "active" : ""}`} aria-hidden="true">
+                        <span className="relative z-10 flex items-center justify-center">
+                          {submitting ? (
+                            <div className="flex items-center gap-2">
+                              <iframe 
+                                src="https://lottie.host/embed/20627f0f-53d5-4592-b1bc-2dfbe181352b" 
+                                className="w-10 h-10 border-none pointer-events-none scale-150"
+                                title="Loading Animation"
+                              />
+                            </div>
+                          ) : (
+                            "Submit Registration"
+                          )}
+                        </span>
+                        {!submitting && (
+                          <span className={`burst ${burst ? "active" : ""}`} aria-hidden="true">
                           {Array.from({ length: 10 }).map((_, index) => (
                             <span key={index} className="burst-item" style={{ "--x": `${Math.cos((index / 10) * Math.PI * 2) * 64}px`, "--y": `${Math.sin((index / 10) * Math.PI * 2) * 64}px`, animationDelay: `${index * 0.03}s` }}>
                               {index % 2 === 0 ? "❤" : "✿"}
