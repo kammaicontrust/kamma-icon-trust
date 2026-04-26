@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ─── Users Collection ───
+    // Public read (profiles listing, profile detail pages)
+    // Owner write only (auth.uid must match document ID)
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ─── Profiles Collection (Public Marriage Profiles) ───
+    // Public read (anyone can browse matrimonial profiles)
+    // Owner write only (auth.uid must match document ID)
+    match /profiles/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ─── Registrations Collection (Private Full Form Data) ───
+    // Private to the user who submitted it
+    match /registrations/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+
+
+    // ─── Gallery Collection ───
+    // Public read, authenticated write (admin uploads)
+    match /gallery/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ─── Videos Collection ───
+    // Public read, authenticated write (admin uploads)
+    match /videos/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ─── Default Deny ───
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

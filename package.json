@@ -11,6 +11,8 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@lottiefiles/dotlottie-web": "^0.71.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.0",
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.5.1",
     "cloudinary": "^2.9.0",
@@ -20,7 +22,7 @@
     "git": "^0.1.5",
     "lucide-react": "^0.564.0",
     "next": "16.1.4",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "^8.0.6",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
     "react": "19.2.3",
@@ -28,7 +30,8 @@
     "react-dom": "19.2.3",
     "recharts": "^3.7.0",
     "scrollreveal": "^4.0.9",
-    "swiper": "^12.1.2"
+    "swiper": "^12.1.2",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

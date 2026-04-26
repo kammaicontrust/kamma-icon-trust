@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { db } from "@/app/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Search, MapPin, Briefcase, Network, User } from "lucide-react";
+
+import ProfileCard from "@/app/components/ProfileCard";
 
 const FilterInput = ({ icon: Icon, placeholder, value, onChange }) => (
   <div className="relative group">
@@ -22,18 +24,6 @@ const FilterInput = ({ icon: Icon, placeholder, value, onChange }) => (
   </div>
 );
 
-const InfoRow = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center justify-between text-[15px]">
-    <div className="flex items-center gap-3 text-[#0A1F44]/50">
-      <Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
-      <span className="font-medium tracking-wide">{label}</span>
-    </div>
-    <span className="font-semibold text-[#0A1F44] text-right ml-4 truncate">
-      {value || "—"}
-    </span>
-  </div>
-);
-
 export default function ProfilesPage() {
   const [users, setUsers] = useState([]);
   const [filters, setFilters] = useState({
@@ -42,6 +32,16 @@ export default function ProfilesPage() {
     gothram: "",
     occupation: "",
   });
+
+  // Parallax for header section
+  const headerRef = useRef(null);
+  const { scrollYProgress: headerScroll } = useScroll({
+    target: headerRef,
+    offset: ["start start", "end start"],
+  });
+  const headerY = useTransform(headerScroll, [0, 1], [0, -60]);
+  const headerScale = useTransform(headerScroll, [0, 1], [1, 0.96]);
+  const headerOpacity = useTransform(headerScroll, [0, 0.6], [1, 0.3]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -62,151 +62,102 @@ export default function ProfilesPage() {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#0A1F44] py-16 px-4 sm:px-6 lg:px-8 font-sans selection:bg-[#FF9933]/20 selection:text-[#0A1F44]">
-      <div className="max-w-7xl mx-auto space-y-16">
+    <div className="min-h-screen bg-[#F8F9FA] text-[#0A1F44] py-24 px-4 sm:px-6 lg:px-8 selection:bg-[#FF9933]/20 selection:text-[#0A1F44]">
+      <div className="max-w-7xl mx-auto">
         
-        {/* Header Section */}
-        <div className="text-center space-y-4 mb-20">
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
+        {/* Header Section — Parallax */}
+        <motion.div
+          ref={headerRef}
+          style={{ y: headerY, scale: headerScale, opacity: headerOpacity }}
+          className="text-center mb-24"
+        >
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-4xl md:text-5xl lg:text-[3.5rem] font-medium tracking-tight text-[#0A1F44]"
+            className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#FF9933] mb-4"
           >
-            Matrimonial Profiles
+            Matrimonial Service
+          </motion.p>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            className="text-5xl md:text-7xl font-black tracking-tight text-[#0A1F44]"
+          >
+            Find Your <br />
+            <span className="bg-gradient-to-r from-[#FF9933] via-[#0A1F44] to-[#138808] bg-clip-text text-transparent">Perfect Match</span>
           </motion.h1>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="h-[3px] w-16 bg-gradient-to-r from-[#FF9933] to-[#138808] mx-auto rounded-full opacity-80"
-          />
-        </div>
-
-        {/* Search & Filter - Floating Glass Panel */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-[2rem] p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-        >
-          <div className="flex items-center gap-3 mb-8 justify-center sm:justify-start">
-            <Search className="w-[18px] h-[18px] text-[#FF9933]" strokeWidth={2} />
-            <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-[#0A1F44]/60">Refine Search</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <FilterInput 
-              icon={User} 
-              placeholder="Search by Name" 
-              value={filters.name} 
-              onChange={(v) => handleFilterChange("name", v)} 
-            />
-            <FilterInput 
-              icon={MapPin} 
-              placeholder="Search by Village" 
-              value={filters.village} 
-              onChange={(v) => handleFilterChange("village", v)} 
-            />
-            <FilterInput 
-              icon={Network} 
-              placeholder="Search by Gothram" 
-              value={filters.gothram} 
-              onChange={(v) => handleFilterChange("gothram", v)} 
-            />
-            <FilterInput 
-              icon={Briefcase} 
-              placeholder="Search by Occupation" 
-              value={filters.occupation} 
-              onChange={(v) => handleFilterChange("occupation", v)} 
-            />
-          </div>
         </motion.div>
 
-        {/* Profiles Grid */}
+        {/* Search & Filter Panel — Depth entrance */}
         <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial={{ opacity: 0, y: 40, rotateX: 4 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0 }}
+          transition={{ delay: 0.2, duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+          style={{ perspective: "1000px" }}
+          className="relative z-20 mb-24"
         >
-          {filtered.map((u) => (
-            <motion.div 
-              key={u.id}
-              variants={cardVariants}
-              whileHover={{ 
-                y: -8, 
-                boxShadow: "0 20px 40px -10px rgba(10,31,68,0.08)",
-                borderColor: "rgba(255,153,51,0.3)"
-              }}
-              className="relative bg-white/60 backdrop-blur-xl border border-white/60 rounded-[2rem] overflow-hidden group transition-colors duration-300"
-            >
-              <div className="p-8 flex flex-col items-center">
-                {/* Profile Image */}
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#FF9933] to-[#138808] rounded-full blur opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
-                  <div className="relative w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden z-10 bg-gray-100 flex items-center justify-center">
-                    {u.photoUrl ? (
-                      <img
-                        src={u.photoUrl}
-                        alt={u.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-10 h-10 text-gray-300" />
-                    )}
-                  </div>
-                </div>
-                
-                {/* Name */}
-                <h3 className="text-[1.35rem] font-semibold text-[#0A1F44] tracking-tight mb-8 text-center group-hover:text-[#FF9933] transition-colors duration-300">
-                  {u.name || "Unknown"}
-                </h3>
-
-                {/* Details Section */}
-                <div className="w-full space-y-4 mb-10">
-                  <InfoRow icon={MapPin} label="Village" value={u.village} />
-                  <InfoRow icon={Network} label="Gothram" value={u.gothram} />
-                  <InfoRow icon={Briefcase} label="Occupation" value={u.occupation} />
-                  <InfoRow icon={User} label="Age" value={u.age ? `${u.age} years` : undefined} />
-                </div>
-
-                {/* View Profile Button */}
-                <Link href={`/profile/${u.id}`} className="w-full mt-auto block">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-3.5 rounded-xl border border-[#FF9933]/20 bg-gradient-to-r from-[#FF9933] to-[#FFB266] text-white font-medium tracking-wide shadow-[0_8px_20px_rgb(255,153,51,0.2)] hover:shadow-[0_12px_25px_rgb(255,153,51,0.3)] transition-all duration-300 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">View Profile</span>
-                  </motion.button>
-                </Link>
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#FF9933]/5 to-[#138808]/5 rounded-[3rem] blur-3xl -z-10" />
+          <div className="bg-white/40 backdrop-blur-3xl border border-white/60 rounded-[3rem] p-8 md:p-12 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="p-3 rounded-2xl bg-[#FF9933]/10 text-[#FF9933]">
+                <Search className="w-5 h-5" strokeWidth={2.5} />
               </div>
-            </motion.div>
-          ))}
+              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#0A1F44]/40">Filter Profiles</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <FilterInput 
+                icon={User} 
+                placeholder="Full Name" 
+                value={filters.name} 
+                onChange={(v) => handleFilterChange("name", v)} 
+              />
+              <FilterInput 
+                icon={MapPin} 
+                placeholder="Village / Location" 
+                value={filters.village} 
+                onChange={(v) => handleFilterChange("village", v)} 
+              />
+              <FilterInput 
+                icon={Network} 
+                placeholder="Gothram" 
+                value={filters.gothram} 
+                onChange={(v) => handleFilterChange("gothram", v)} 
+              />
+              <FilterInput 
+                icon={Briefcase} 
+                placeholder="Occupation" 
+                value={filters.occupation} 
+                onChange={(v) => handleFilterChange("occupation", v)} 
+              />
+            </div>
+          </div>
         </motion.div>
+
+        {/* Profiles Grid — Z-axis staggered entrance */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" style={{ perspective: "1200px" }}>
+          <AnimatePresence mode="popLayout">
+            {filtered.map((u, i) => (
+              <motion.div
+                key={u.id}
+                layout
+                initial={{ opacity: 0, scale: 0.88, z: -80, rotateX: 6 }}
+                animate={{ opacity: 1, scale: 1, z: 0, rotateX: 0 }}
+                exit={{ opacity: 0, scale: 0.88, z: -80 }}
+                transition={{
+                  duration: 0.6,
+                  delay: i * 0.07,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <ProfileCard user={u} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
 
         {filtered.length === 0 && users.length > 0 && (
           <motion.div 

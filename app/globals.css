@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* ===== DESIGN TOKENS ===== */
 :root {
   --saffron: #D4882F;
   --saffron-soft: rgba(212,136,47,0.08);
@@ -10,14 +11,24 @@
   --white: #FFFFFF;
 }
 
+/* ===== BASE ===== */
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
+  min-height: 100vh;
   color: var(--navy);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
+
+  /* Premium soft gradient background: light pink → cream → white */
+  background: linear-gradient(
+    135deg,
+    #fff1f2 0%,   /* softest pink */
+    #fffbf5 40%,  /* warm cream */
+    #ffffff 100%  /* pure white */
+  );
+  background-attachment: fixed;
 }
 
 section { scroll-margin-top: 100px; }
@@ -27,16 +38,18 @@ section { scroll-margin-top: 100px; }
   color: var(--navy);
 }
 
+/* ===== SCROLLBAR ===== */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* ===== TOUCH ===== */
 button, .button { touch-action: manipulation; }
 
 @media (hover: none) and (pointer: coarse) {
   button:active { opacity: 0.92; }
 }
 
-/* ===== CURSOR ===== */
+/* ===== CUSTOM CURSOR ===== */
 @media (hover: hover) and (pointer: fine) {
   html, body, * { cursor: none; }
 }
@@ -103,7 +116,7 @@ button, .button { touch-action: manipulation; }
 .wave-item {
   height: 60px;
   border-radius: 30px;
-  margin: 0 -3px; /* Reduced overlap for less congestion */
+  margin: 0 -3px;
   position: relative;
   animation-duration: 1.2s;
   animation-iteration-count: infinite;
@@ -132,4 +145,216 @@ button, .button { touch-action: manipulation; }
   @keyframes pulseWidth4 { 0% { width: 8px; } 100% { width: 20px; } }
   @keyframes pulseWidth5 { 0% { width: 6px; } 100% { width: 12px; } }
   .loader-title { font-size: 12px; letter-spacing: 6px; }
+}
+
+/* ===== GLASSMORPHISM HERO BUTTONS ===== */
+.glass-btn {
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-glow: rgba(212, 136, 47, 0.4);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 220px;
+  min-height: 56px;
+  padding: 16px 32px;
+  border-radius: 16px;
+
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  color: var(--navy);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease,
+    background 0.3s ease,
+    border-color 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Animated glow ring behind button */
+.glass-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 153, 51, 0.15),
+    rgba(19, 136, 8, 0.1),
+    rgba(10, 31, 68, 0.08)
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Icon container inside button */
+.glass-btn .btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  transition: transform 0.3s ease;
+}
+
+/* ── Hover state ── */
+@media (hover: hover) {
+  .glass-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 153, 51, 0.35);
+    box-shadow:
+      0 8px 32px rgba(212, 136, 47, 0.2),
+      0 0 60px rgba(212, 136, 47, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  .glass-btn:hover::before {
+    opacity: 1;
+  }
+  .glass-btn:hover .btn-icon {
+    transform: scale(1.15);
+  }
+}
+
+/* ── Active/press state ── */
+.glass-btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition-duration: 0.1s;
+}
+
+/* ── Focus visible ── */
+.glass-btn:focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 3px;
+}
+
+/* ── Button color variants ── */
+.glass-btn--saffron {
+  --glass-glow: rgba(255, 153, 51, 0.45);
+  background: rgba(255, 153, 51, 0.12);
+  border-color: rgba(255, 153, 51, 0.3);
+  color: #0A1F44;
+}
+@media (hover: hover) {
+  .glass-btn--saffron:hover {
+    background: rgba(255, 153, 51, 0.2);
+    border-color: rgba(255, 153, 51, 0.5);
+    box-shadow:
+      0 8px 40px rgba(255, 153, 51, 0.25),
+      0 0 80px rgba(255, 153, 51, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.glass-btn--green {
+  --glass-glow: rgba(19, 136, 8, 0.4);
+  background: rgba(19, 136, 8, 0.1);
+  border-color: rgba(19, 136, 8, 0.25);
+  color: #0A1F44;
+}
+@media (hover: hover) {
+  .glass-btn--green:hover {
+    background: rgba(19, 136, 8, 0.18);
+    border-color: rgba(19, 136, 8, 0.45);
+    box-shadow:
+      0 8px 40px rgba(19, 136, 8, 0.2),
+      0 0 80px rgba(19, 136, 8, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+.glass-btn--navy {
+  --glass-glow: rgba(10, 31, 68, 0.35);
+  background: rgba(10, 31, 68, 0.1);
+  border-color: rgba(10, 31, 68, 0.2);
+  color: #0A1F44;
+}
+@media (hover: hover) {
+  .glass-btn--navy:hover {
+    background: rgba(10, 31, 68, 0.16);
+    border-color: rgba(10, 31, 68, 0.4);
+    box-shadow:
+      0 8px 40px rgba(10, 31, 68, 0.18),
+      0 0 80px rgba(10, 31, 68, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* ── Glow pulse animation ── */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 0 30px var(--glass-glow, rgba(212, 136, 47, 0.15)),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 0 50px var(--glass-glow, rgba(212, 136, 47, 0.25)),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+}
+
+.glass-btn--pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* ── Mobile touch optimizations ── */
+@media (max-width: 640px) {
+  .glass-btn {
+    min-width: 100%;
+    min-height: 52px;
+    padding: 14px 24px;
+    font-size: 12px;
+    border-radius: 14px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .glass-btn:active {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 153, 51, 0.4);
+    transform: scale(0.97);
+  }
+}
+
+/* ── Custom Animations ── */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-6px); }
 }

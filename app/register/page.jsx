@@ -132,6 +132,16 @@ export default function RegisterPage() {
   const [fileErrors, setFileErrors] = useState({});
   const canvasRef = useRef(null);
 
+  // ── Token Gate State ──
+  const [gateVerified, setGateVerified] = useState(false);
+  const [gateMobile, setGateMobile] = useState("");
+  const [gateToken, setGateToken] = useState("");
+  const [gateError, setGateError] = useState("");
+  const [gateLoading, setGateLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState(null);
+  const [gateEmptyError, setGateEmptyError] = useState(false);
+
   const totalSteps = steps.length;
   const [stepTitle, stepFields] = steps[step];
   const progress = ((step + 1) / totalSteps) * 100;
@@ -254,6 +264,12 @@ export default function RegisterPage() {
   };
 
   const verifyToken = async () => {
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      setTokenError(`Too many failed attempts. Please try again in ${remaining} seconds.`);
+      return;
+    }
+
     const cleanToken = tokenValue.trim().toUpperCase();
     if (!user) {
       setTokenError("Please sign in with Google first.");
@@ -271,49 +287,36 @@ export default function RegisterPage() {
       console.log("Token verification input:", cleanToken);
 
       const tokenFieldQuery = query(
-        collection(db, "tokens"),
-        where("token", "==", cleanToken),
-        where("used", "==", false)
+        collection(db, "users"),
+        where("token", "==", cleanToken)
       );
 
-      const tokenNumberFieldQuery = query(
-        collection(db, "tokens"),
-        where("tokenNumber", "==", cleanToken),
-        where("used", "==", false)
-      );
+      const tokenSnapshot = await getDocs(tokenFieldQuery);
+      const snapshot = tokenSnapshot;
 
-      const [tokenSnapshot, tokenNumberSnapshot] = await Promise.all([
-        getDocs(tokenFieldQuery),
-        getDocs(tokenNumberFieldQuery),
-      ]);
-
-      const snapshot = !tokenSnapshot.empty ? tokenSnapshot : tokenNumberSnapshot;
       console.log(
         "Token verification query result:",
         {
           tokenFieldMatches: tokenSnapshot.docs.map((item) => ({ id: item.id, ...item.data() })),
-          tokenNumberFieldMatches: tokenNumberSnapshot.docs.map((item) => ({
-            id: item.id,
-            ...item.data(),
-          })),
         }
       );
 
       if (snapshot.empty) {
-        setTokenError("Invalid token");
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+        if (newAttempts >= 5) {
+          setLockoutUntil(Date.now() + 30000);
+          setTokenError("Too many failed attempts. Please try again in 30 seconds.");
+        } else {
+          setTokenError("Invalid token");
+        }
         return;
       }
 
       const tokenDoc = snapshot.docs[0];
-      const tokenRef = doc(db, "tokens", tokenDoc.id);
 
-      await updateDoc(tokenRef, {
-        used: true,
-        usedBy: user.uid,
-        usedByEmail: user.email || "",
-        usedAt: serverTimestamp(),
-      });
-
+      setFailedAttempts(0);
+      setLockoutUntil(null);
       setTokenValue(cleanToken);
       setVerifiedTokenId(tokenDoc.id);
       setTokenVerified(true);
@@ -417,12 +420,54 @@ export default function RegisterPage() {
       await setDoc(
         doc(db, "users", user.uid),
         {
+          // Auth fields (already exist from sign-in)
           registrationEmail: profile.emailId,
           registrationCompleted: true,
           registrationUpdatedAt: serverTimestamp(),
           tokenId: verifiedTokenId,
           profileImageUrl,
           resumeUrl,
+          // ── New: fields required for token-based login (my-profile-login) ──
+          name: profile.name,
+          mobile: profile.contactNumber,
+          email: profile.emailId,
+          token: tokenValue.trim().toUpperCase(),
+        },
+        { merge: true }
+      );
+
+      // ── New: Create public-facing profiles document ──
+      await setDoc(
+        doc(db, "profiles", user.uid),
+        {
+          uid: user.uid,
+          name: profile.name,
+          gender: profile.gender,
+          dateOfBirth: profile.dateOfBirth,
+          placeOfBirth: profile.placeOfBirth,
+          maritalStatus: profile.maritalStatus,
+          caste: profile.caste,
+          gotra: profile.gotra,
+          rashi: profile.rashi,
+          nakshatra: profile.nakshatra,
+          education: profile.education,
+          occupation: profile.occupation,
+          height: profile.height,
+          weight: profile.weight,
+          complexion: profile.complexion,
+          bloodGroup: profile.bloodGroup,
+          village: profile.placeOfBirth,
+          gothram: profile.gotra,
+          mobile: profile.contactNumber,
+          email: profile.emailId,
+          token: tokenValue.trim().toUpperCase(),
+          tokenId: verifiedTokenId,
+          profileImageUrl,
+          photoUrl: profileImageUrl,
+          resumeUrl,
+          profileCompleted: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
@@ -437,6 +482,213 @@ export default function RegisterPage() {
       window.setTimeout(() => setBurst(false), 1200);
     }
   };
+
+  // ── Gate Verification Handler ──
+  const handleGateVerify = async () => {
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      setGateError(`Too many failed attempts. Please try again in ${remaining} seconds.`);
+      return;
+    }
+
+    const cleanMobile = gateMobile.trim();
+    const cleanToken = gateToken.trim().toUpperCase();
+
+    if (!cleanMobile || !cleanToken) {
+      setGateEmptyError(true);
+      setGateError("Please enter mobile number and token");
+      setTimeout(() => setGateEmptyError(false), 500);
+      return;
+    }
+    if (!/^\d{10}$/.test(cleanMobile)) {
+      setGateError("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setGateLoading(true);
+    setGateError("");
+
+    try {
+      // Check users collection for matching mobile + token
+      const tokenQuery = query(
+        collection(db, "users"),
+        where("token", "==", cleanToken),
+        where("mobile", "==", cleanMobile)
+      );
+
+      const snapshot = await getDocs(tokenQuery);
+
+      if (snapshot.empty) {
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+        if (newAttempts >= 5) {
+          setLockoutUntil(Date.now() + 30000);
+          setGateError("Too many failed attempts. Please try again in 30 seconds.");
+        } else {
+          setGateError("Invalid mobile number or token. Please check and try again.");
+        }
+        return;
+      }
+
+      const tokenDoc = snapshot.docs[0];
+      const tokenData = tokenDoc.data();
+
+      // Gate passed — pre-fill token for the inner verification step
+      setFailedAttempts(0);
+      setLockoutUntil(null);
+      setTokenValue(cleanToken);
+      setGateVerified(true);
+    } catch (error) {
+      console.error("Gate verification error:", error);
+      setGateError("Verification failed. Please try again.");
+    } finally {
+      setGateLoading(false);
+    }
+  };
+
+  // ── Token Gate Screen ──
+  if (!gateVerified) {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.main 
+          key="gate-screen"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.5 }}
+          className="relative min-h-screen overflow-hidden bg-[#fff7ef] text-stone-900"
+        >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,227,197,0.95),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(253,225,223,0.75),_transparent_28%),linear-gradient(180deg,_#fff9f4_0%,_#fff2e9_45%,_#fff8f1_100%)]" />
+        <div className="mandala absolute inset-0 opacity-60" />
+        <div className="floral absolute inset-x-0 top-0 h-28" />
+        <div className="floral absolute inset-x-0 bottom-0 h-28 rotate-180" />
+
+        <section className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-xl"
+          >
+            <div className="rounded-[2.5rem] border border-white/70 bg-white/75 px-6 py-10 shadow-[0_24px_80px_rgba(162,89,62,0.10)] backdrop-blur-xl sm:px-10 sm:py-14">
+              {/* Header */}
+              <div className="mb-10 text-center">
+                <div className="mb-5 flex items-center justify-center gap-4 text-4xl text-amber-500">
+                  <span className="bell">۞</span>
+                  <span>✿</span>
+                  <span className="bell" style={{ animationDelay: "0.2s" }}>۞</span>
+                </div>
+                <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-rose-950 sm:text-4xl">
+                  Access Registration
+                </h2>
+                <p className="mx-auto mt-3 max-w-md text-base text-stone-500">
+                  Enter your token and mobile number to continue
+                </p>
+              </div>
+
+              {/* Mobile Input */}
+              <div className={`space-y-6 transition-opacity duration-300 ${gateLoading ? 'pointer-events-none opacity-50' : ''}`}>
+                <label className="flex flex-col gap-2.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-rose-900/70 ml-1">Mobile Number</span>
+                  <input
+                    type="tel"
+                    value={gateMobile}
+                    onChange={(e) => setGateMobile(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="10-digit mobile number"
+                    className={`w-full rounded-2xl border ${gateEmptyError && !gateMobile.trim() ? 'border-red-400 bg-red-50/50 animate-[shake_0.4s_ease-in-out]' : 'border-rose-100 bg-white/90'} px-5 py-4 text-[16px] text-stone-800 outline-none transition-all placeholder:text-stone-400 focus:border-rose-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(251,113,133,0.15)]`}
+                  />
+                </label>
+
+                {/* Token Input */}
+                <label className="flex flex-col gap-2.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-rose-900/70 ml-1">Token Code</span>
+                  <input
+                    type="text"
+                    value={gateToken}
+                    onChange={(e) => setGateToken(e.target.value)}
+                    placeholder="Enter your token (e.g. KIT-XXXXXX)"
+                    className={`w-full rounded-2xl border ${gateEmptyError && !gateToken.trim() ? 'border-red-400 bg-red-50/50 animate-[shake_0.4s_ease-in-out]' : 'border-rose-100 bg-white/90'} px-5 py-4 text-[16px] text-stone-800 outline-none transition-all placeholder:text-stone-400 focus:border-rose-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(251,113,133,0.15)] uppercase`}
+                  />
+                </label>
+              </div>
+
+              {/* Error */}
+              <AnimatePresence>
+                {gateError && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1, x: [-5, 5, -5, 5, 0] }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 rounded-2xl border border-rose-200/60 bg-rose-50/80 px-4 py-3 text-center text-[14px] font-medium text-rose-600 shadow-sm backdrop-blur-sm"
+                  >
+                    {gateError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Access Form Button */}
+              <button
+                type="button"
+                onClick={handleGateVerify}
+                disabled={gateLoading}
+                className="mt-8 w-full rounded-2xl bg-[linear-gradient(135deg,#f2d188,#e88db0)] px-8 py-4.5 text-[16px] font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(232,141,176,0.3)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              >
+                {gateLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Verifying...
+                  </span>
+                ) : (
+                  "Access Form"
+                )}
+              </button>
+
+              {/* Get Token Link */}
+              <p className="mt-6 text-center text-sm text-stone-500">
+                Don&apos;t have a token?{" "}
+                <a href="/get-token" className="font-semibold text-amber-700 transition hover:text-rose-700 hover:underline">
+                  Get Token
+                </a>
+              </p>
+            </div>
+          </motion.div>
+        </section>
+
+        <style jsx>{`
+          .mandala {
+            background-image:
+              radial-gradient(circle at center, rgba(210, 161, 108, 0.11) 0, rgba(210, 161, 108, 0.11) 1px, transparent 1px),
+              radial-gradient(circle at center, rgba(232, 150, 165, 0.1) 0, rgba(232, 150, 165, 0.1) 1px, transparent 1px);
+            background-size: 36px 36px, 120px 120px;
+            background-position: 0 0, 18px 18px;
+            mask-image: radial-gradient(circle at center, black 36%, transparent 92%);
+          }
+          .floral {
+            background:
+              linear-gradient(90deg, transparent, rgba(250, 225, 184, 0.9), transparent),
+              repeating-linear-gradient(90deg, transparent 0 28px, rgba(233, 176, 130, 0.18) 28px 40px, transparent 40px 68px);
+          }
+          .bell {
+            animation: bell 2.6s ease-in-out infinite;
+            display: inline-block;
+            transform-origin: top center;
+          }
+          @keyframes bell {
+            0%, 100% { transform: rotate(0deg); }
+            15% { transform: rotate(7deg); }
+            30% { transform: rotate(-6deg); }
+            45% { transform: rotate(4deg); }
+            60% { transform: rotate(-3deg); }
+          }
+        `}</style>
+        </motion.main>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#fff7ef] text-stone-900">

@@ -3,6 +3,8 @@ import Script from "next/script";
 import LottieLoader from "./components/LottieLoader";
 import ClientWrapper from "./ClientWrapper";
 import AdPopup from "./components/AdPopup";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 export const metadata = {
   title: "Kamma Icon Trust",
@@ -18,15 +20,13 @@ export default function RootLayout({ children }) {
         
         <LottieLoader />
 
-      
-      
+        <Navbar />
 
         <ClientWrapper>
           {children}
         </ClientWrapper>
 
-        
-        
+        <Footer />
 
         {/* Google Analytics */}
         <Script

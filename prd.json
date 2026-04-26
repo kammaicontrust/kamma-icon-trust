@@ -1,0 +1,49 @@
+{
+  "project": "KammaIconTrust",
+  "branchName": "ralph/get-token-flow",
+  "description": "Get Token flow for new users to generate registration tokens",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Google Sign-In screen on /get-token",
+      "priority": 1,
+      "passes": true,
+      "notes": "Sign-in screen with Google button, matching wedding aesthetic. Already have a token? → /register link."
+    },
+    {
+      "id": "US-002",
+      "title": "Token request form with Name, Mobile, Email, Aadhaar last 4",
+      "priority": 2,
+      "passes": true,
+      "notes": "Shows after Google sign-in. Pre-fills name and email from Google profile. Aadhaar is optional. Mobile restricted to 10 digits."
+    },
+    {
+      "id": "US-003",
+      "title": "Mobile existence check — returns existing token if found",
+      "priority": 3,
+      "passes": true,
+      "notes": "Queries tokens collection by mobile. If found, shows existing token with 'Token Found' message."
+    },
+    {
+      "id": "US-004",
+      "title": "Unique token generation (KIT-XXXX format) with collision check",
+      "priority": 4,
+      "passes": true,
+      "notes": "Generates KIT-XXXX with 4 alphanumeric chars (no ambiguous I/O/0/1). Checks for collisions up to 10 attempts."
+    },
+    {
+      "id": "US-005",
+      "title": "Save to tokens + users collections, update Firestore rules",
+      "priority": 5,
+      "passes": true,
+      "notes": "Tokens rule updated to allow authenticated create with used=false and valid mobile. Users collection gets name/mobile/email/aadhaar."
+    },
+    {
+      "id": "US-006",
+      "title": "Gate screen Get Token link points to /get-token",
+      "priority": 6,
+      "passes": true,
+      "notes": "Updated from /#contact to /get-token."
+    }
+  ]
+}

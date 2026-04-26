@@ -1,0 +1,61 @@
+# Ralph Progress Log
+Started: 2026-04-26T00:30:00+05:30
+Feature: Hero UI Overlay with Glassmorphism Buttons
+---
+## Codebase Patterns
+- Project uses Next.js App Router with "use client" directives
+- Tailwind CSS v4 with @import "tailwindcss" syntax
+- Framer Motion for all animations (motion, AnimatePresence)
+- @react-three/fiber + drei for 3D scenes
+- Color palette: Saffron #D4882F/#FF9933, Green #2A7B3A/#138808, Navy #0A1F44
+- HeroPremium.jsx is the main hero section, uses CinematicScene.jsx for 3D
+- Custom cursor system with .cursor-dot and .cursor-ring classes
+- Buttons use touch-action: manipulation for mobile
+- Glassmorphism buttons use .glass-btn class with --saffron/--green/--navy variants
+- 3D canvas sits at z-0, vignette at z-[1], content at z-10 — buttons must be in z-10 div
+- Register button uses onClick + setTimeout + router.push pattern for premium transition
+- pointer-events: auto on individual buttons ensures clickability over 3D canvas
+---
+
+## 2026-04-26T00:35 - US-001: Glassmorphism CSS
+- Added .glass-btn with backdrop-blur, semi-transparent bg, rounded corners
+- Three color variants: --saffron, --green, --navy
+- Hover: scale(1.05), glow box-shadow, ::before gradient ring
+- Active: scale(0.97), focus-visible outline
+- @keyframes glowPulse for ambient animation
+- Mobile breakpoint at 640px with full-width buttons
+- Touch optimization with (hover: none) and (pointer: coarse) media queries
+- Files changed: app/globals.css (+195 lines)
+- **Learnings:** Tailwind v4 uses @import "tailwindcss" not @tailwind directives
+---
+
+## 2026-04-26T00:38 - US-002: HeroOverlay Component
+- Created app/components/HeroOverlay.jsx
+- Three buttons: Register (UserPlus icon), Matrimonial Profiles (Heart), Donate (HandCoins)
+- framer-motion containerVariants with staggerChildren: 0.15, delayChildren: 1.2
+- buttonVariants: fade-up from y:24 + scale:0.92
+- whileHover: scale 1.06, whileTap: scale 0.95
+- Register uses onClick handler (no Link), others wrapped in Next.js Link
+- Files changed: app/components/HeroOverlay.jsx (new, 134 lines)
+- **Learnings:** lucide-react icons already installed in project
+---
+
+## 2026-04-26T00:40 - US-003: Integration into HeroPremium
+- Imported HeroOverlay into HeroPremium.jsx
+- Replaced hardcoded buttons in both hero stage and low-end fallback
+- Maintained z-index layering: canvas z-0, vignette z-[1], content z-10
+- Passed onRegisterClick and isNavigating props for premium transition
+- Browser verified: all 3 buttons clickable, Matrimonial Profiles navigates to /profiles
+- Files changed: app/sections/HeroPremium.jsx (modified, -30/+8 lines)
+- **Learnings:** pointer-events: auto on buttons is critical since parent divs may have pointer-events-none
+---
+
+## 2026-04-26T00:42 - US-004: Mobile Responsive Layout
+- Refactored from inline styles to Tailwind responsive classes
+- flex-col on mobile, sm:flex-row on desktop, sm:flex-wrap for safety
+- CSS handles min-height: 52px and min-width: 100% on mobile (<640px)
+- gap-3.5 mobile → sm:gap-5 desktop
+- Verified in mobile viewport: buttons stack properly, no overflow
+- Files changed: app/components/HeroOverlay.jsx (minor refactor)
+- **Learnings:** Avoid mixing inline styles with Tailwind responsive classes — use pure Tailwind
+---
