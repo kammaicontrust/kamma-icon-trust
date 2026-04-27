@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { gsap } from "gsap";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -51,6 +52,26 @@ export default function GetTokenPage() {
   const [generatedToken, setGeneratedToken] = useState("");
   const [isExisting, setIsExisting] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const successRef = useRef(null);
+  const tokenBoxRef = useRef(null);
+
+  // ── GSAP Success Animations ──
+  useEffect(() => {
+    if (generatedToken && successRef.current) {
+      const ctx = gsap.context(() => {
+        const tl = gsap.timeline();
+
+        tl.from(".gsap-checkmark", { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(1.5)", delay: 0.2 })
+          .from(".gsap-title", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.2")
+          .from(".token-box", { opacity: 0, scale: 0.8, duration: 0.6, ease: "power3.out" }, "-=0.2")
+          .from(".gsap-instruction", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.3")
+          .from(".gsap-continue-btn", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.3");
+      }, successRef);
+
+      return () => ctx.revert();
+    }
+  }, [generatedToken]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
@@ -309,53 +330,30 @@ export default function GetTokenPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             className="w-full max-w-lg"
+            ref={successRef}
           >
             <div className="rounded-[2.5rem] border border-white/70 bg-white/75 px-6 py-10 text-center shadow-[0_24px_80px_rgba(162,89,62,0.10)] backdrop-blur-xl sm:px-10 sm:py-14">
               {/* Animated checkmark */}
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 200, damping: 15 }}
-                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-lg shadow-emerald-100/50"
-              >
+              <div className="gsap-checkmark mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-lg shadow-emerald-100/50">
                 <svg className="h-10 w-10 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                  <motion.path
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4.5 12.75l6 6 9-13.5"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-              </motion.div>
+              </div>
 
               {/* Heading */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
+              <div className="gsap-title">
                 <p className="text-sm font-semibold uppercase tracking-[0.4em] text-emerald-600">
                   {isExisting ? "Token Retrieved" : "Success"}
                 </p>
                 <h2 className="mt-4 font-serif text-2xl leading-tight text-rose-950 sm:text-3xl">
                   Token Generated Successfully
                 </h2>
-              </motion.div>
+              </div>
 
               {/* Token Display Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 15 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: copied ? 1.02 : 1, 
-                  y: 0,
-                  boxShadow: copied ? "0 0 60px rgba(251,191,36,0.5)" : "0 0 40px rgba(251,191,36,0.25)",
-                  borderColor: copied ? "rgba(251,191,36,0.8)" : "rgba(253,230,138,0.6)"
-                }}
-                transition={{ duration: 0.4, type: "spring" }}
-                className="relative mx-auto mt-8 max-w-md overflow-hidden rounded-[2rem] border-2 bg-white/90 px-6 py-8 backdrop-blur-md"
+              <div
+                ref={tokenBoxRef}
+                className="token-box relative mx-auto mt-8 max-w-md overflow-hidden rounded-[2rem] border-2 border-amber-200/60 bg-white/90 px-6 py-8 shadow-[0_0_40px_rgba(251,191,36,0.25)] backdrop-blur-md"
               >
                 {/* Subtle animated gradient background inside token box */}
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(252,211,77,0.1)_50%,transparent_75%)] bg-[length:250%_250%] animate-[shimmer_3s_infinite_linear]" />
@@ -372,6 +370,14 @@ export default function GetTokenPage() {
                       navigator.clipboard.writeText(generatedToken);
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
+
+                      if (tokenBoxRef.current) {
+                        gsap.fromTo(
+                          tokenBoxRef.current,
+                          { scale: 1, boxShadow: "0 0 40px rgba(251,191,36,0.25)" },
+                          { scale: 1.03, boxShadow: "0 0 60px rgba(251,191,36,0.6)", duration: 0.15, yoyo: true, repeat: 1, ease: "power2.out" }
+                        );
+                      }
                     }}
                     className="mx-auto mt-6 flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/80 px-6 py-3 text-sm font-semibold text-amber-700 shadow-sm transition-all hover:scale-105 hover:bg-amber-100 hover:shadow-md active:scale-95"
                   >
@@ -406,27 +412,18 @@ export default function GetTokenPage() {
                     </AnimatePresence>
                   </button>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Instruction */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="mx-auto mt-8 max-w-[280px] rounded-2xl border border-rose-100 bg-rose-50/60 px-5 py-4 shadow-sm"
-              >
+              <div className="gsap-instruction mx-auto mt-8 max-w-[280px] rounded-2xl border border-rose-100 bg-rose-50/60 px-5 py-4 shadow-sm">
                 <p className="text-[13px] leading-relaxed text-rose-900/80">
                   <span className="font-semibold text-rose-700">Please copy and save this token.</span><br/>
                   Use it with your mobile number to access the form.
                 </p>
-              </motion.div>
+              </div>
 
               {/* Continue to Login Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.5 }}
-              >
+              <div className="gsap-continue-btn">
                 <Link
                   href="/register"
                   className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#f2d188,#e88db0)] px-10 py-4.5 text-[16px] font-semibold text-white shadow-[0_8px_20px_rgba(232,141,176,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(232,141,176,0.4)] active:scale-[0.98]"
@@ -436,7 +433,7 @@ export default function GetTokenPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
                 </Link>
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         </section>
