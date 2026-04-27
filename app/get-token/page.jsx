@@ -63,10 +63,35 @@ export default function GetTokenPage() {
         const tl = gsap.timeline();
 
         tl.from(".gsap-checkmark", { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(1.5)", delay: 0.2 })
-          .from(".gsap-title", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.2")
-          .from(".token-box", { opacity: 0, scale: 0.8, duration: 0.6, ease: "power3.out" }, "-=0.2")
-          .from(".gsap-instruction", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.3")
-          .from(".gsap-continue-btn", { opacity: 0, y: 15, duration: 0.5, ease: "power2.out" }, "-=0.3");
+          .from(".gsap-title", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, "-=0.2")
+          .from(".token-box", { 
+            opacity: 0, 
+            scale: 0.6, 
+            duration: 0.8, 
+            ease: "back.out(1.7)",
+            onComplete: () => {
+              // Subtle glow pulse
+              gsap.to(".token-box", {
+                scale: 1.03,
+                boxShadow: "0 0 60px rgba(251,191,36,0.5)",
+                duration: 1.5,
+                yoyo: true,
+                repeat: 1,
+                ease: "sine.inOut"
+              });
+              // Micro depth floating
+              gsap.to(".token-box", {
+                y: -3,
+                duration: 2.5,
+                yoyo: true,
+                repeat: -1,
+                ease: "sine.inOut"
+              });
+            }
+          }, "-=0.2")
+          .from(".gsap-copy-btn", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, "-=0.65")
+          .from(".gsap-instruction", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, "-=0.5")
+          .from(".gsap-continue-btn", { opacity: 0, y: 20, duration: 0.5, ease: "power2.out" }, "-=0.35");
       }, successRef);
 
       return () => ctx.revert();
@@ -313,8 +338,8 @@ export default function GetTokenPage() {
       <AnimatePresence mode="wait">
         <motion.main 
           key="success-screen"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.5 }}
           className="relative min-h-screen overflow-hidden bg-[#fff7ef] text-stone-900"
@@ -375,11 +400,11 @@ export default function GetTokenPage() {
                         gsap.fromTo(
                           tokenBoxRef.current,
                           { scale: 1, boxShadow: "0 0 40px rgba(251,191,36,0.25)" },
-                          { scale: 1.03, boxShadow: "0 0 60px rgba(251,191,36,0.6)", duration: 0.15, yoyo: true, repeat: 1, ease: "power2.out" }
+                          { scale: 1.08, boxShadow: "0 0 70px rgba(251,191,36,0.8)", duration: 0.15, yoyo: true, repeat: 1, ease: "power2.out" }
                         );
                       }
                     }}
-                    className="mx-auto mt-6 flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/80 px-6 py-3 text-sm font-semibold text-amber-700 shadow-sm transition-all hover:scale-105 hover:bg-amber-100 hover:shadow-md active:scale-95"
+                    className="gsap-copy-btn mx-auto mt-6 flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50/80 px-6 py-3 text-sm font-semibold text-amber-700 shadow-sm transition-all hover:scale-105 hover:bg-amber-100 hover:shadow-md active:scale-95"
                   >
                     <AnimatePresence mode="wait">
                       {copied ? (
