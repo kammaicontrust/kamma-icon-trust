@@ -9,6 +9,18 @@ export default function LottieLoader() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    // Prevent scrolling while loading
+    if (loading) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loading]);
+
+  useEffect(() => {
     // Ensure loader only shows once per session if user navigates away and back
     const hasLoaded = sessionStorage.getItem("has_loaded_main");
     if (hasLoaded) {
@@ -23,17 +35,17 @@ export default function LottieLoader() {
         autoplay: true,
         loop: true,
         canvas: canvasRef.current,
-        src: "https://lottie.host/e8c067d7-6207-4b2f-8b4e-232a2be32bc1/UIPOb9FcWF.lottie",
+        src: "/Shri Ram.lottie",
       });
     }
 
     const fadeTimer = setTimeout(() => {
       setFade(true);
-    }, 2500);
+    }, 2000); // 2 seconds minimum display time
 
     const hideTimer = setTimeout(() => {
       setLoading(false);
-    }, 3100); // 0.6s after fade out
+    }, 2700); // 0.7s after fade out
 
     return () => {
       if (dotLottie) {
@@ -47,8 +59,10 @@ export default function LottieLoader() {
   if (!loading) return null;
 
   return (
-    <div className={`loader-screen ${fade ? "fade-out" : ""}`} style={{ background: '#F7F8FA' }}>
-      <div className="flex flex-col items-center justify-center">
+    <div 
+      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-[#F7F8FA] transition-opacity duration-700 ease-in-out ${fade ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+    >
+      <div className={`flex flex-col items-center justify-center transition-transform duration-700 ease-in-out ${fade ? "scale-95" : "scale-100"}`}>
         <canvas
           ref={canvasRef}
           style={{ width: 300, height: 300 }}
