@@ -1,77 +1,54 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { DotLottie } from '@lottiefiles/dotlottie-web';
-
-// Pre-fetch the local lottie file immediately when the JS module is loaded
-// This eliminates the network delay before the component mounts and the player initializes
-if (typeof window !== "undefined") {
-  fetch("/Shri Ram.lottie").catch(() => {});
-}
+import { useEffect, useState } from "react";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function LottieLoader() {
   const [loading, setLoading] = useState(true);
   const [fade, setFade] = useState(false);
-  const canvasRef = useRef(null);
 
   useEffect(() => {
-    // Prevent scrolling while loading
-    if (loading) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [loading]);
+    // Check if loader has been shown in this session
+    const hasSeenLoader = sessionStorage.getItem("hasSeenLoader");
 
-  useEffect(() => {
-    // Ensure loader only shows once per session if user navigates away and back
-    const hasLoaded = sessionStorage.getItem("has_loaded_main");
-    if (hasLoaded) {
+    if (hasSeenLoader) {
       setLoading(false);
       return;
     }
-    sessionStorage.setItem("has_loaded_main", "true");
 
-    let dotLottie = null;
-    if (canvasRef.current) {
-      dotLottie = new DotLottie({
-        autoplay: true,
-        loop: true,
-        canvas: canvasRef.current,
-        src: "/Shri Ram.lottie",
-      });
-    }
+    // Set flag in session storage
+    sessionStorage.setItem("hasSeenLoader", "true");
 
+    // Fade out after 2.5 seconds
     const fadeTimer = setTimeout(() => {
       setFade(true);
-    }, 2000); // 2 seconds minimum display time
+    }, 2500);
 
-    const hideTimer = setTimeout(() => {
+    // Completely remove from DOM after fade transition (0.6s defined in css)
+    const removeTimer = setTimeout(() => {
       setLoading(false);
-    }, 2700); // 0.7s after fade out
+    }, 3100);
 
     return () => {
-      if (dotLottie) {
-        dotLottie.destroy();
-      }
       clearTimeout(fadeTimer);
-      clearTimeout(hideTimer);
+      clearTimeout(removeTimer);
     };
   }, []);
 
-  if (!loading) return null;
+  if (!loading) {
+    return null;
+  }
 
   return (
     <div 
-      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-[#F7F8FA] transition-opacity duration-700 ease-in-out ${fade ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      className={`loader-screen ${fade ? "fade-out" : ""}`} 
+      style={{ backgroundColor: '#F7F8FA' }}
     >
-      <div className={`flex flex-col items-center justify-center transition-transform duration-700 ease-in-out ${fade ? "scale-95" : "scale-100"}`}>
-        <canvas
-          ref={canvasRef}
-          style={{ width: 300, height: 300 }}
+      <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
+        <DotLottieReact
+          src="https://lottie.host/e8c067d7-6207-4b2f-8b4e-232a2be32bc1/UIPOb9FcWF.lottie"
+          loop
+          autoplay
         />
       </div>
     </div>

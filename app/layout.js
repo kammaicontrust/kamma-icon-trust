@@ -14,9 +14,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preload" href="/Shri%20Ram.lottie" as="fetch" crossOrigin="anonymous" />
-      </head>
       <body>
 
         <AdPopup />
