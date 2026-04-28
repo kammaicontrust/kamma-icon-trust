@@ -19,15 +19,15 @@ export default function LottieLoader() {
     // Set flag in session storage
     sessionStorage.setItem("hasSeenLoader", "true");
 
-    // Fade out after 2.5 seconds
+    // Fade out quicker, after 1.2 seconds
     const fadeTimer = setTimeout(() => {
       setFade(true);
-    }, 2500);
+    }, 1200);
 
     // Completely remove from DOM after fade transition (0.6s defined in css)
     const removeTimer = setTimeout(() => {
       setLoading(false);
-    }, 3100);
+    }, 1800);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -44,7 +44,7 @@ export default function LottieLoader() {
       className={`loader-screen ${fade ? "fade-out" : ""}`} 
       style={{ backgroundColor: '#F7F8FA' }}
     >
-      <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
+      <div className="w-80 h-80 sm:w-96 sm:h-96 md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
         <DotLottieReact
           src="https://lottie.host/e8c067d7-6207-4b2f-8b4e-232a2be32bc1/UIPOb9FcWF.lottie"
           loop
