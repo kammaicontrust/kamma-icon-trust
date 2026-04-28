@@ -3,6 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 import { DotLottie } from '@lottiefiles/dotlottie-web';
 
+// Pre-fetch the local lottie file immediately when the JS module is loaded
+// This eliminates the network delay before the component mounts and the player initializes
+if (typeof window !== "undefined") {
+  fetch("/Shri Ram.lottie").catch(() => {});
+}
+
 export default function LottieLoader() {
   const [loading, setLoading] = useState(true);
   const [fade, setFade] = useState(false);
