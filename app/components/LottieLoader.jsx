@@ -6,7 +6,14 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 export default function LottieLoader() {
   const [loading, setLoading] = useState(true);
   const [fade, setFade] = useState(false);
-  const [dotLottie, setDotLottie] = useState(null);
+
+  const startFadeOut = useCallback(() => {
+    setFade(true);
+    // Remove from DOM after transition (0.6s as per globals.css + small buffer)
+    setTimeout(() => {
+      setLoading(false);
+    }, 800);
+  }, []);
 
   useEffect(() => {
     // Check if loader has been shown in this session
@@ -20,30 +27,13 @@ export default function LottieLoader() {
     // Set flag in session storage
     sessionStorage.setItem("hasSeenLoader", "true");
 
-    // Fallback timeout in case the animation fails to load or complete event is missed
-    const fallbackTimer = setTimeout(() => {
-      setFade(true);
-      setTimeout(() => setLoading(false), 600);
-    }, 6000); // Increased fallback to 6 seconds
+    // Safety timeout in case the animation fails to fire 'complete'
+    const safetyTimer = setTimeout(() => {
+      startFadeOut();
+    }, 6000);
 
-    return () => clearTimeout(fallbackTimer);
-  }, []);
-
-  useEffect(() => {
-    if (dotLottie) {
-      const onComplete = () => {
-        setFade(true);
-        // Completely remove from DOM after fade transition (0.6s defined in css)
-        setTimeout(() => setLoading(false), 600);
-      };
-
-      dotLottie.addEventListener('complete', onComplete);
-
-      return () => {
-        dotLottie.removeEventListener('complete', onComplete);
-      };
-    }
-  }, [dotLottie]);
+    return () => clearTimeout(safetyTimer);
+  }, [startFadeOut]);
 
   if (!loading) {
     return null;
@@ -54,13 +44,19 @@ export default function LottieLoader() {
       className={`loader-screen ${fade ? "fade-out" : ""}`} 
       style={{ backgroundColor: '#F7F8FA' }}
     >
-      <div className="w-80 h-80 sm:w-96 sm:h-96 md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] flex items-center justify-center">
+      <div className="w-[95vw] h-[95vh] max-w-[900px] max-h-[900px] flex items-center justify-center transform scale-110">
         <DotLottieReact
           src="https://lottie.host/e8c067d7-6207-4b2f-8b4e-232a2be32bc1/UIPOb9FcWF.lottie"
-          autoplay
           loop={false}
-          dotLottieRefCallback={setDotLottie}
-          renderConfig={{ autoResize: true }}
+          autoplay
+          renderConfig={{
+            freezeOnOffscreen: true,
+          }}
+          dotLottieRefCallback={(dotLottie) => {
+            dotLottie.addEventListener('complete', () => {
+              startFadeOut();
+            });
+          }}
         />
       </div>
     </div>
