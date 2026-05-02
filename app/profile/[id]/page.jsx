@@ -5,6 +5,22 @@ import { db } from "@/app/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useParams } from "next/navigation";
 
+const InfoField = ({ label, value }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <p className="text-gray-900">{value || "Not provided"}</p>
+  </div>
+);
+
+const ProfileSection = ({ title, children }) => (
+  <div className="mb-8">
+    <h2 className="text-xl font-semibold text-[#FF9933] border-b border-pink-100 pb-2 mb-4">{title}</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {children}
+    </div>
+  </div>
+);
+
 export default function ProfilePage() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
@@ -79,57 +95,61 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="p-8">
-            <div className="text-center mb-8">
+            <div className="text-center mb-10">
               <img
                 src={user.photoUrl || user.profileImageUrl || "/default-avatar.png"}
                 alt={user.name || "Profile"}
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-pink-200"
               />
               <h1 className="text-3xl font-bold text-gray-800">{user.name || "Not provided"}</h1>
+              <p className="text-gray-500 mt-2">{user.occupation || "No occupation provided"}</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Village</label>
-                  <p className="text-gray-900">{user.village || "Not provided"}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Gothram</label>
-                  <p className="text-gray-900">{user.gothram || "Not provided"}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Occupation</label>
-                  <p className="text-gray-900">{user.occupation || "Not provided"}</p>
-                </div>
-              </div>
+            <ProfileSection title="Personal Info">
+              <InfoField label="Email" value={user.email} />
+              <InfoField label="Mobile" value={user.mobile} />
+              <InfoField label="Age" value={user.age ? `${user.age} years` : null} />
+              <InfoField label="Date of Birth" value={user.dateOfBirth} />
+              <InfoField label="Gender" value={user.gender} />
+              <InfoField label="Marital Status" value={user.maritalStatus} />
+              <InfoField label="Height" value={user.height} />
+              <InfoField label="Weight" value={user.weight} />
+              <InfoField label="Blood Group" value={user.bloodGroup} />
+              <InfoField label="Complexion" value={user.complexion} />
+              <InfoField label="Religion" value={user.religion} />
+              <InfoField label="Caste" value={user.caste} />
+              <InfoField label="Education" value={user.education} />
+              <InfoField label="Income" value={user.income} />
+            </ProfileSection>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="text-gray-900">{user.email || "Not provided"}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Mobile</label>
-                  <p className="text-gray-900">{user.mobile || "Not provided"}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Age</label>
-                  <p className="text-gray-900">{user.age ? `${user.age} years` : "Not provided"}</p>
-                </div>
-              </div>
-            </div>
+            <ProfileSection title="Family Details">
+              <InfoField label="Father's Name" value={user.fatherName} />
+              <InfoField label="Father's Occupation" value={user.fatherOccupation} />
+              <InfoField label="Mother's Name" value={user.motherName} />
+              <InfoField label="Mother's Occupation" value={user.motherOccupation} />
+              <InfoField label="Siblings" value={user.siblings} />
+              <InfoField label="Village" value={user.village} />
+            </ProfileSection>
+
+            <ProfileSection title="Horoscope Details">
+              <InfoField label="Gothram / Gotra" value={user.gothram} />
+              <InfoField label="Nakshatra" value={user.nakshatra} />
+              <InfoField label="Rashi" value={user.rashi} />
+              <InfoField label="Manglik" value={user.manglik} />
+              <InfoField label="Place of Birth" value={user.placeOfBirth} />
+              <InfoField label="Time of Birth" value={user.timeOfBirth} />
+            </ProfileSection>
 
             {user.resumeUrl && (
-              <div className="mt-8 text-center">
+              <div className="mt-10 text-center">
                 <a
                   href={user.resumeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg hover:from-pink-600 hover:to-rose-600 transition-colors duration-300"
+                  className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg hover:from-pink-600 hover:to-rose-600 transition-colors duration-300 shadow-md hover:shadow-lg"
                 >
                   Download Resume
                 </a>
