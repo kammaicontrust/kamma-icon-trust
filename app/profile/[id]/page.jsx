@@ -15,10 +15,11 @@ export default function ProfilePage() {
     const fetchUser = async () => {
       if (!id) return;
       try {
-        const docRef = doc(db, "profiles", id);
+        const docRef = doc(db, "registrations", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const data = docSnap.data();
+          const rootData = docSnap.data();
+          const data = rootData.profile || {};
           
           // Calculate age from dateOfBirth if available
           let calculatedAge = null;
@@ -32,7 +33,14 @@ export default function ProfilePage() {
           setUser({ 
             id: docSnap.id, 
             ...data,
-            age: calculatedAge || data.age
+            name: rootData.name || data.name,
+            village: data.placeOfBirth || data.village,
+            gothram: data.gotra || data.gothram,
+            age: calculatedAge || data.age,
+            photoUrl: rootData.profileImageUrl || data.photoUrl,
+            resumeUrl: rootData.resumeUrl || data.resumeUrl,
+            email: rootData.email || data.emailId || data.email,
+            mobile: rootData.mobile || data.contactNumber || data.mobile
           });
         }
       } catch (err) {

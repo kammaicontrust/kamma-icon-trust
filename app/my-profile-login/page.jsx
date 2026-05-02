@@ -17,7 +17,7 @@ export default function MyProfileLoginPage() {
 
     try {
       const q = query(
-        collection(db, "users"),
+        collection(db, "registrations"),
         where("token", "==", token),
         where("mobile", "==", mobile)
       );

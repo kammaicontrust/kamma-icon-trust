@@ -48,9 +48,11 @@ export default function ProfilesPage() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "profiles"));
+        const snapshot = await getDocs(collection(db, "registrations"));
         const profilesData = snapshot.docs.map(doc => {
-          const data = doc.data();
+          const rootData = doc.data();
+          const data = rootData.profile || {};
+          
           let calculatedAge = null;
           if (data.dateOfBirth) {
             const dob = new Date(data.dateOfBirth);
@@ -58,7 +60,16 @@ export default function ProfilesPage() {
             const ageDt = new Date(diffMs);
             calculatedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
           }
-          return { id: doc.id, ...data, age: calculatedAge || data.age };
+          
+          return { 
+            id: doc.id, 
+            ...data,
+            name: rootData.name || data.name,
+            village: data.placeOfBirth || data.village,
+            gothram: data.gotra || data.gothram,
+            age: calculatedAge || data.age,
+            photoUrl: rootData.profileImageUrl
+          };
         });
         setUsers(profilesData);
       } catch (err) {

@@ -408,67 +408,15 @@ export default function RegisterPage() {
           authProvider: "google",
           tokenId: verifiedTokenId,
           tokenValue: tokenValue.trim(),
+          token: tokenValue.trim().toUpperCase(),
+          mobile: profile.contactNumber,
+          name: profile.name,
           profileCompleted: true,
           submittedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           profileImageUrl,
           resumeUrl,
           profile,
-        },
-        { merge: true }
-      );
-
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          // Auth fields (already exist from sign-in)
-          registrationEmail: profile.emailId,
-          registrationCompleted: true,
-          registrationUpdatedAt: serverTimestamp(),
-          tokenId: verifiedTokenId,
-          profileImageUrl,
-          resumeUrl,
-          // ── New: fields required for token-based login (my-profile-login) ──
-          name: profile.name,
-          mobile: profile.contactNumber,
-          email: profile.emailId,
-          token: tokenValue.trim().toUpperCase(),
-        },
-        { merge: true }
-      );
-
-      // ── New: Create public-facing profiles document ──
-      await setDoc(
-        doc(db, "profiles", user.uid),
-        {
-          uid: user.uid,
-          name: profile.name,
-          gender: profile.gender,
-          dateOfBirth: profile.dateOfBirth,
-          placeOfBirth: profile.placeOfBirth,
-          maritalStatus: profile.maritalStatus,
-          caste: profile.caste,
-          gotra: profile.gotra,
-          rashi: profile.rashi,
-          nakshatra: profile.nakshatra,
-          education: profile.education,
-          occupation: profile.occupation,
-          height: profile.height,
-          weight: profile.weight,
-          complexion: profile.complexion,
-          bloodGroup: profile.bloodGroup,
-          village: profile.placeOfBirth,
-          gothram: profile.gotra,
-          mobile: profile.contactNumber,
-          email: profile.emailId,
-          token: tokenValue.trim().toUpperCase(),
-          tokenId: verifiedTokenId,
-          profileImageUrl,
-          photoUrl: profileImageUrl,
-          resumeUrl,
-          profileCompleted: true,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
