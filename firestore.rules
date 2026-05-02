@@ -3,13 +3,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ─── Users Collection ───
-    // Public read (profiles listing, profile detail pages)
-    // Owner write only (auth.uid must match document ID)
+    // Owner read and write only (auth.uid must match document ID)
     match /users/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
     
     // ─── Profiles Collection (Public Marriage Profiles) ───
