@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import dynamic from "next/dynamic";
+
+const DotLottieReact = dynamic(
+  () => import("@lottiefiles/dotlottie-react").then((mod) => mod.DotLottieReact),
+  { ssr: false }
+);
 
 export default function LottieLoader() {
   const [loading, setLoading] = useState(true);
   const [fade, setFade] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const startFadeOut = useCallback(() => {
     setFade(true);
@@ -16,6 +22,7 @@ export default function LottieLoader() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     // Check if loader has been shown in this session
     const hasSeenLoader = sessionStorage.getItem("hasSeenLoader");
 
@@ -35,7 +42,7 @@ export default function LottieLoader() {
     return () => clearTimeout(safetyTimer);
   }, [startFadeOut]);
 
-  if (!loading) {
+  if (!mounted || !loading) {
     return null;
   }
 
