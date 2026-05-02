@@ -21,6 +21,7 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { auth, db, storage } from "@/app/lib/firebase";
+import { useGuide, GUIDE_STEPS } from "../context/GuideContext";
 
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
@@ -141,6 +142,8 @@ export default function RegisterPage() {
   const [lockoutUntil, setLockoutUntil] = useState(null);
   const [gateEmptyError, setGateEmptyError] = useState(false);
 
+  const { setStep: setGuideStep } = useGuide();
+
   const totalSteps = steps.length;
   const [stepTitle, stepFields] = steps[step];
   const progress = ((step + 1) / totalSteps) * 100;
@@ -148,6 +151,19 @@ export default function RegisterPage() {
     () => [formData.name || "Profile in progress", formData.education || "Education pending", formData.occupation || "Occupation pending"],
     [formData.education, formData.name, formData.occupation]
   );
+
+  // Guide Steps effect
+  useEffect(() => {
+    if (!gateVerified) {
+      setGuideStep(GUIDE_STEPS.LOGIN);
+    } else if (gateVerified && user && tokenVerified && !success) {
+      if (step === totalSteps - 1) {
+        setGuideStep(GUIDE_STEPS.FINAL_SUBMIT);
+      } else {
+        setGuideStep(GUIDE_STEPS.FORM_FILLING);
+      }
+    }
+  }, [gateVerified, user, tokenVerified, success, step, totalSteps, setGuideStep]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
@@ -536,7 +552,7 @@ export default function RegisterPage() {
               </div>
 
               {/* Mobile Input */}
-              <div className={`space-y-6 transition-opacity duration-300 ${gateLoading ? 'pointer-events-none opacity-50' : ''}`}>
+              <div data-guide="login-form" className={`space-y-6 transition-opacity duration-300 relative rounded-2xl ${gateLoading ? 'pointer-events-none opacity-50' : ''}`}>
                 <label className="flex flex-col gap-2.5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-rose-900/70 ml-1">Mobile Number</span>
                   <input
@@ -783,7 +799,7 @@ export default function RegisterPage() {
                 </div>
 
                 <AnimatePresence mode="wait">
-                  <motion.div key={step} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.3, ease: "easeOut" }} className="grid gap-5 md:grid-cols-2">
+                  <motion.div data-guide="form-fields" key={step} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.3, ease: "easeOut" }} className="grid gap-5 md:grid-cols-2 relative rounded-2xl">
                     {stepFields.map((name) => (
                       <InputField key={name} name={name} value={formData[name]} error={errors[name]} onChange={updateField} onBlur={blurField} />
                     ))}
@@ -821,7 +837,7 @@ export default function RegisterPage() {
                       Save and Continue
                     </button>
                   ) : (
-                    <div className="relative">
+                    <div data-guide="submit-btn" className="relative rounded-full">
                       <div className="pointer-events-none absolute -top-7 left-1/2 flex -translate-x-1/2 gap-1.5 text-sm text-emerald-600">
                         {["❦", "❦", "❦", "❦", "❦", "❦"].map((leafChar, index) => (
                           <span key={`${leafChar}-${index}`} className="leaf" style={{ animationDelay: `${index * 0.12}s` }}>{leafChar}</span>

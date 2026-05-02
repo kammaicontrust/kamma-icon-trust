@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "@/app/lib/firebase";
 import Link from "next/link";
+import { useGuide, GUIDE_STEPS } from "../context/GuideContext";
 
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
@@ -55,6 +56,17 @@ export default function GetTokenPage() {
 
   const successRef = useRef(null);
   const tokenBoxRef = useRef(null);
+  
+  const { setStep } = useGuide();
+
+  // Guide Steps effect
+  useEffect(() => {
+    if (generatedToken) {
+      setStep(GUIDE_STEPS.TOKEN_GENERATED);
+    } else if (authReady && user) {
+      setStep(GUIDE_STEPS.GET_TOKEN_FORM);
+    }
+  }, [generatedToken, authReady, user, setStep]);
 
   // ── GSAP Success Animations ──
   useEffect(() => {
@@ -378,6 +390,7 @@ export default function GetTokenPage() {
               {/* Token Display Card */}
               <div
                 ref={tokenBoxRef}
+                data-guide="generated-token"
                 className="token-box relative mx-auto mt-8 max-w-md overflow-hidden rounded-[2rem] border-2 border-amber-200/60 bg-white/90 px-6 py-8 shadow-[0_0_40px_rgba(251,191,36,0.25)] backdrop-blur-md"
               >
                 {/* Subtle animated gradient background inside token box */}
@@ -525,7 +538,7 @@ export default function GetTokenPage() {
             </div>
 
             {/* Form Fields */}
-            <div className="space-y-5">
+            <div data-guide="get-token-form" className="space-y-5 relative rounded-2xl">
               <label className="flex flex-col gap-2">
                 <span className="text-sm font-medium uppercase tracking-[0.08em] text-rose-900/80">Full Name <span className="text-rose-400">*</span></span>
                 <input

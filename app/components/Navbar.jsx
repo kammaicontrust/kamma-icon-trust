@@ -68,11 +68,18 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/register">
-              <button className="rounded-full bg-[#0A1F44] px-6 py-2.5 text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:bg-[#D4882F] hover:shadow-lg hover:shadow-[#D4882F]/20">
-                Register
-              </button>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/get-token">
+                <button data-guide="nav-get-token" className="rounded-full border border-[#0A1F44] px-6 py-2.5 text-[12px] font-bold uppercase tracking-widest text-[#0A1F44] transition-all hover:bg-[#0A1F44] hover:text-white hover:shadow-lg">
+                  Get Token
+                </button>
+              </Link>
+              <Link href="/register">
+                <button className="rounded-full bg-[#0A1F44] px-6 py-2.5 text-[12px] font-bold uppercase tracking-widest text-white transition-all hover:bg-[#D4882F] hover:shadow-lg hover:shadow-[#D4882F]/20">
+                  Register
+                </button>
+              </Link>
+            </div>
           </div>
 
           {/* Mobile Hamburger */}
@@ -105,7 +112,12 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <div className="mt-8">
+              <div className="mt-8 flex flex-col gap-4">
+                <Link href="/get-token" onClick={closeMenu}>
+                  <button data-guide="nav-get-token" className="w-full rounded-full border-2 border-[#0A1F44] py-4 text-sm font-bold uppercase tracking-widest text-[#0A1F44]">
+                    Get Token
+                  </button>
+                </Link>
                 <Link href="/register" onClick={closeMenu}>
                   <button className="w-full rounded-full bg-[#0A1F44] py-4 text-sm font-bold uppercase tracking-widest text-white">
                     Register Now
