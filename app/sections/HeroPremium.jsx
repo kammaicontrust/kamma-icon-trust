@@ -46,7 +46,7 @@ export default function HeroPremium() {
     }
 
     // Auto transition from intro to hero
-    const timer = setTimeout(() => setStage("hero"), 3500);
+    const timer = setTimeout(() => setStage("hero"), 4000);
 
     return () => {
       clearTimeout(timer);
@@ -57,7 +57,7 @@ export default function HeroPremium() {
   /* ── Fallback for low-end devices ── */
   if (isLowEnd) {
     return (
-      <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white">
+      <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#fafafa]">
         {/* Static gradient background */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(255,153,51,0.08),transparent_60%),radial-gradient(ellipse_at_70%_80%,rgba(19,136,8,0.06),transparent_50%)]" />
 
@@ -113,9 +113,9 @@ export default function HeroPremium() {
           <motion.div
             key="intro"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-white"
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+            transition={{ duration: 1.5, ease: [0.43, 0.13, 0.23, 0.96] }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-[#fafafa]"
           >
             <div className="h-full w-full">
               <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
@@ -126,10 +126,10 @@ export default function HeroPremium() {
             </div>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ delay: 0.5 }}
-              className="absolute bottom-12 text-[10px] uppercase tracking-[0.5em] text-[#0A1F44]"
+              initial={{ opacity: 0, letterSpacing: "0.2em" }}
+              animate={{ opacity: 0.4, letterSpacing: "0.5em" }}
+              transition={{ delay: 1, duration: 2, ease: "power2.out" }}
+              className="absolute bottom-12 text-[10px] uppercase text-[#0A1F44]"
             >
               Initializing Experience
             </motion.div>
