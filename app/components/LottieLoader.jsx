@@ -63,9 +63,11 @@ export default function LottieLoader() {
             worker: true,
           }}
           dotLottieRefCallback={(dotLottie) => {
-            dotLottie.addEventListener('complete', () => {
-              startFadeOut();
-            });
+            if (dotLottie) {
+              dotLottie.addEventListener('complete', () => {
+                startFadeOut();
+              });
+            }
             // To make it feel "Big at starting", we can slightly scale it or just let it fill
           }}
         />
