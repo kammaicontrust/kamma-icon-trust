@@ -74,7 +74,7 @@ export default function ProfilesPage() {
         setUsers(profilesData);
       } catch (err) {
         console.error("Error fetching profiles:", err);
-        setError("Failed to load profiles. Please try again later.");
+        setError(`Failed to load profiles: ${err.message}`);
       } finally {
         setLoading(false);
       }
