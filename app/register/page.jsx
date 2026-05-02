@@ -3,7 +3,6 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { DotLottie } from '@lottiefiles/dotlottie-web';
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -186,18 +185,20 @@ export default function RegisterPage() {
   }, []);
 
   useEffect(() => {
-    let dotLottie = null;
+    let dotLottieInstance = null;
     if (submitting && canvasRef.current) {
-      dotLottie = new DotLottie({
-        autoplay: true,
-        loop: true,
-        canvas: canvasRef.current,
-        src: "https://lottie.host/bcc64836-d5f2-4b3d-89f8-22261c93a970/f9Tx2HLyHb.lottie",
-      });
+      import('@lottiefiles/dotlottie-web').then(({ DotLottie }) => {
+        dotLottieInstance = new DotLottie({
+          autoplay: true,
+          loop: true,
+          canvas: canvasRef.current,
+          src: "https://lottie.host/bcc64836-d5f2-4b3d-89f8-22261c93a970/f9Tx2HLyHb.lottie",
+        });
+      }).catch(err => console.error("Failed to load Lottie:", err));
     }
     return () => {
-      if (dotLottie) {
-        dotLottie.destroy();
+      if (dotLottieInstance) {
+        dotLottieInstance.destroy();
       }
     };
   }, [submitting]);
