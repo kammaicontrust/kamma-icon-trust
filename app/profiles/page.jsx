@@ -26,6 +26,8 @@ const FilterInput = ({ icon: Icon, placeholder, value, onChange }) => (
 
 export default function ProfilesPage() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     name: "",
     village: "",
@@ -44,11 +46,29 @@ export default function ProfilesPage() {
   const headerOpacity = useTransform(headerScroll, [0, 0.6], [1, 0.3]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const snapshot = await getDocs(collection(db, "users"));
-      setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchProfiles = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "profiles"));
+        const profilesData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          let calculatedAge = null;
+          if (data.dateOfBirth) {
+            const dob = new Date(data.dateOfBirth);
+            const diffMs = Date.now() - dob.getTime();
+            const ageDt = new Date(diffMs);
+            calculatedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
+          }
+          return { id: doc.id, ...data, age: calculatedAge || data.age };
+        });
+        setUsers(profilesData);
+      } catch (err) {
+        console.error("Error fetching profiles:", err);
+        setError("Failed to load profiles. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchUsers();
+    fetchProfiles();
   }, []);
 
   const filtered = users.filter(u =>
@@ -137,29 +157,39 @@ export default function ProfilesPage() {
         </motion.div>
 
         {/* Profiles Grid — Z-axis staggered entrance */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" style={{ perspective: "1200px" }}>
-          <AnimatePresence mode="popLayout">
-            {filtered.map((u, i) => (
-              <motion.div
-                key={u.id}
-                layout
-                initial={{ opacity: 0, scale: 0.88, z: -80, rotateX: 6 }}
-                animate={{ opacity: 1, scale: 1, z: 0, rotateX: 0 }}
-                exit={{ opacity: 0, scale: 0.88, z: -80 }}
-                transition={{
-                  duration: 0.6,
-                  delay: i * 0.07,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                <ProfileCard user={u} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF9933]"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 text-red-500 font-medium">
+            {error}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10" style={{ perspective: "1200px" }}>
+            <AnimatePresence mode="popLayout">
+              {filtered.map((u, i) => (
+                <motion.div
+                  key={u.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.88, z: -80, rotateX: 6 }}
+                  animate={{ opacity: 1, scale: 1, z: 0, rotateX: 0 }}
+                  exit={{ opacity: 0, scale: 0.88, z: -80 }}
+                  transition={{
+                    duration: 0.6,
+                    delay: i * 0.07,
+                    ease: [0.25, 0.1, 0.25, 1],
+                  }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  <ProfileCard user={u} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
-        {filtered.length === 0 && users.length > 0 && (
+        {!loading && !error && filtered.length === 0 && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -168,8 +198,10 @@ export default function ProfilesPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <Search className="w-6 h-6 text-gray-400" />
             </div>
-            <p className="text-lg text-gray-500 font-medium">No profiles match your search criteria.</p>
-            <p className="text-sm text-gray-400 mt-2">Try adjusting your filters to see more results.</p>
+            <p className="text-lg text-gray-500 font-medium">
+              {users.length === 0 ? "No profiles available." : "No profiles match your search criteria."}
+            </p>
+            {users.length > 0 && <p className="text-sm text-gray-400 mt-2">Try adjusting your filters to see more results.</p>}
           </motion.div>
         )}
 

@@ -9,10 +9,12 @@ export default function ProfilePage() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (id) {
+      if (!id) return;
+      try {
         const docRef = doc(db, "profiles", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -33,6 +35,10 @@ export default function ProfilePage() {
             age: calculatedAge || data.age
           });
         }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+        setError("Failed to load profile");
+      } finally {
         setLoading(false);
       }
     };
@@ -50,12 +56,14 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (error || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Profile Not Found</h1>
-          <p className="text-gray-600">The profile you&apos;re looking for doesn&apos;t exist.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">{error || "Profile Not Found"}</h1>
+          <p className="text-gray-600">
+            {error ? "There was an error loading the profile. It may be private or deleted." : "The profile you're looking for doesn't exist."}
+          </p>
         </div>
       </div>
     );
