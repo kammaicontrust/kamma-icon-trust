@@ -13,10 +13,25 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       if (id) {
-        const docRef = doc(db, "users", id);
+        const docRef = doc(db, "profiles", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setUser({ id: docSnap.id, ...docSnap.data() });
+          const data = docSnap.data();
+          
+          // Calculate age from dateOfBirth if available
+          let calculatedAge = null;
+          if (data.dateOfBirth) {
+            const dob = new Date(data.dateOfBirth);
+            const diffMs = Date.now() - dob.getTime();
+            const ageDt = new Date(diffMs);
+            calculatedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
+          }
+          
+          setUser({ 
+            id: docSnap.id, 
+            ...data,
+            age: calculatedAge || data.age
+          });
         }
         setLoading(false);
       }
@@ -53,41 +68,41 @@ export default function ProfilePage() {
           <div className="p-8">
             <div className="text-center mb-8">
               <img
-                src={user.photoUrl}
-                alt={user.name}
+                src={user.photoUrl || user.profileImageUrl || "/default-avatar.png"}
+                alt={user.name || "Profile"}
                 className="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-pink-200"
               />
-              <h1 className="text-3xl font-bold text-gray-800">{user.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{user.name || "Not provided"}</h1>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Village</label>
-                  <p className="text-gray-900">{user.village}</p>
+                  <p className="text-gray-900">{user.village || "Not provided"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Gothram</label>
-                  <p className="text-gray-900">{user.gothram}</p>
+                  <p className="text-gray-900">{user.gothram || "Not provided"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Occupation</label>
-                  <p className="text-gray-900">{user.occupation}</p>
+                  <p className="text-gray-900">{user.occupation || "Not provided"}</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="text-gray-900">{user.email}</p>
+                  <p className="text-gray-900">{user.email || "Not provided"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Mobile</label>
-                  <p className="text-gray-900">{user.mobile}</p>
+                  <p className="text-gray-900">{user.mobile || "Not provided"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Age</label>
-                  <p className="text-gray-900">{user.age} years</p>
+                  <p className="text-gray-900">{user.age ? `${user.age} years` : "Not provided"}</p>
                 </div>
               </div>
             </div>
