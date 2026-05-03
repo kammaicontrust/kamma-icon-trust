@@ -28,9 +28,9 @@ provider.setCustomParameters({ prompt: "select_account" });
 
 const steps = [
   ["Birth Details", ["name", "gender", "dateOfBirth", "timeOfBirth", "placeOfBirth"]],
-  ["Tradition & Roots", ["maritalStatus", "religion", "caste", "gotra", "rashi"]],
-  ["Personal Profile", ["nakshatra", "manglik", "complexion", "bloodGroup", "height"]],
-  ["Education & Career", ["weight", "education", "occupation", "income", "propertyShare"]],
+  ["Tradition & Roots", ["maritalStatus", "religion", "gotra", "rashi", "nakshatra"]],
+  ["Personal Profile", ["complexion", "bloodGroup", "height", "weight"]],
+  ["Education & Career", ["education", "occupation", "income", "propertyShare"]],
   ["Family Details", ["fatherName", "fatherOccupation", "motherName", "motherOccupation", "siblings"]],
   ["Contact & Finish", ["address", "contactNumber", "emailId"]],
 ];
@@ -41,13 +41,11 @@ const fields = {
   dateOfBirth: { label: "Date of Birth", type: "date" },
   timeOfBirth: { label: "Time of Birth", type: "time" },
   placeOfBirth: { label: "Place of Birth", type: "text", placeholder: "Town / City / Village" },
-  maritalStatus: { label: "Marital Status", type: "select", options: ["Never Married", "Divorced", "Widowed"] },
+  maritalStatus: { label: "Marital Status", type: "select", options: ["Never Married", "Divorced", "Widowed", "Late Marriage"] },
   religion: { label: "Religion", type: "text", placeholder: "Religion" },
-  caste: { label: "Caste", type: "text", placeholder: "Caste" },
   gotra: { label: "Gotra", type: "text", placeholder: "Gotra" },
   rashi: { label: "Rashi", type: "text", placeholder: "Rashi" },
   nakshatra: { label: "Nakshatra", type: "text", placeholder: "Nakshatra" },
-  manglik: { label: "Manglik", type: "select", options: ["Yes", "No", "Don't Know"] },
   complexion: { label: "Complexion", type: "text", placeholder: "Complexion" },
   bloodGroup: { label: "Blood Group", type: "select", options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] },
   height: { label: "Height", type: "text", placeholder: "e.g. 5 ft 8 in" },
