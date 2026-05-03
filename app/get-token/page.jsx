@@ -65,6 +65,8 @@ export default function GetTokenPage() {
       setStep(GUIDE_STEPS.TOKEN_GENERATED);
     } else if (authReady && user) {
       setStep(GUIDE_STEPS.GET_TOKEN_FORM);
+    } else if (authReady && !user) {
+      setStep(GUIDE_STEPS.GET_TOKEN_BTN);
     }
   }, [generatedToken, authReady, user, setStep]);
 
