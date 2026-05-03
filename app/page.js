@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { useGuide, GUIDE_STEPS } from "./context/GuideContext";
 import HeroPremium from "./sections/HeroPremium";
 import About from "./sections/About";
 import Initiatives from "./components/Initiatives";
 import GallerySection from "./components/GallerySection";
 import VideosSection from "./components/VideosSection";
 import ContactForm from "./components/ContactForm";
-import { motion } from "framer-motion";
 
 export default function Home() {
-  const { setStep } = useGuide();
-
-  useEffect(() => {
-    setStep(GUIDE_STEPS.LANDING);
-  }, [setStep]);
 
   return (
     <main className="min-h-screen">

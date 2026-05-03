@@ -2,14 +2,14 @@
 
 import useCursor from "./styles/useCursor";
 import { GuideProvider } from "./context/GuideContext";
-import StepGuide from "./components/StepGuide";
+import OnboardingOverlay from "./components/OnboardingOverlay";
 
 export default function ClientWrapper({ children }) {
   useCursor();
   return (
     <GuideProvider>
       {children}
-      <StepGuide />
+      <OnboardingOverlay />
     </GuideProvider>
   );
 }
