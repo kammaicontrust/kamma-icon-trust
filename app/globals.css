@@ -84,26 +84,11 @@ button, .button { touch-action: manipulation; }
 
 /* ===== LOADER ===== */
 .loader-screen {
-  position: fixed; inset: 0; background: var(--white);
+  position: fixed; inset: 0; background: #fffaf5;
   display: flex; justify-content: center; align-items: center;
   z-index: 9999; transition: opacity 0.6s ease;
 }
 .fade-out { opacity: 0; pointer-events: none; }
-.loader-content {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 40px; text-align: center;
-}
-.loader-title {
-  color: var(--navy); font-size: 14px;
-  letter-spacing: 8px; font-weight: 600;
-  text-transform: uppercase; opacity: 0.5;
-}
-.logo-reveal { display: flex; flex-direction: column; align-items: center; }
-.reveal-logo { width: 100px; margin-bottom: 20px; }
-.logo-reveal h1 {
-  color: var(--navy); letter-spacing: 6px;
-  font-size: 24px; font-weight: 600;
-}
 
 /* ===== FIGMA WAVE ANIMATION ===== */
 .figma-wave-container {
