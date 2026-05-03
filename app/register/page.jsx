@@ -190,23 +190,6 @@ export default function RegisterPage() {
       }
 
       setFormData((current) => ({ ...current, emailId: current.emailId || authUser.email || "" }));
-
-      try {
-        await setDoc(
-          doc(db, "users", authUser.uid),
-          {
-            uid: authUser.uid,
-            email: authUser.email || "",
-            displayName: authUser.displayName || "",
-            photoURL: authUser.photoURL || "",
-            authProvider: "google",
-            lastLoginAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      } catch (error) {
-        console.error("Failed to sync auth user", error);
-      }
     });
 
     return () => unsubscribe();
