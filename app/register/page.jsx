@@ -143,6 +143,17 @@ export default function RegisterPage() {
   const [gateEmptyError, setGateEmptyError] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
 
+  // ── Auto-fill from localStorage (coming from get-token page) ──
+  useEffect(() => {
+    const savedToken = localStorage.getItem("kit_gen_token");
+    const savedMobile = localStorage.getItem("kit_gen_mobile");
+    if (savedToken && savedMobile) {
+      setGateToken(savedToken);
+      setGateMobile(savedMobile);
+      setShowIntro(false); // Skip intro, go straight to login
+    }
+  }, []);
+
   const { setStep: setGuideStep } = useGuide();
 
   const totalSteps = steps.length;
@@ -504,6 +515,10 @@ export default function RegisterPage() {
       setLockoutUntil(null);
       setTokenValue(cleanToken);
       setGateVerified(true);
+
+      // Clean up localStorage after successful gate pass
+      localStorage.removeItem("kit_gen_token");
+      localStorage.removeItem("kit_gen_mobile");
     } catch (error) {
       console.error("Gate verification error:", error);
       setGateError("Verification failed. Please try again.");

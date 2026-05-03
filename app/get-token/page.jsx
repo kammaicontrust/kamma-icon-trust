@@ -191,6 +191,9 @@ export default function GetTokenPage() {
         // Mobile already has a token — return it and resend email
         const existingToken = existingSnapshot.docs[0].data().token;
         sendTokenEmail(cleanEmail, cleanName, existingToken, cleanMobile);
+        // Persist for register page auto-fill
+        localStorage.setItem("kit_gen_token", existingToken);
+        localStorage.setItem("kit_gen_mobile", cleanMobile);
         setGeneratedToken(existingToken);
         setIsExisting(true);
         return;
@@ -238,6 +241,10 @@ export default function GetTokenPage() {
 
       // Step 5: Send token via email (non-blocking)
       sendTokenEmail(cleanEmail, cleanName, tokenCode, cleanMobile);
+
+      // Persist for register page auto-fill
+      localStorage.setItem("kit_gen_token", tokenCode);
+      localStorage.setItem("kit_gen_mobile", cleanMobile);
 
       setGeneratedToken(tokenCode);
       setIsExisting(false);
