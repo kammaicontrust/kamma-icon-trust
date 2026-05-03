@@ -141,6 +141,7 @@ export default function RegisterPage() {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutUntil, setLockoutUntil] = useState(null);
   const [gateEmptyError, setGateEmptyError] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const { setStep: setGuideStep } = useGuide();
 
@@ -511,7 +512,55 @@ export default function RegisterPage() {
     }
   };
 
-  // ── Token Gate Screen ──
+  // ── Step 1: Get Token Intro Screen ──
+  if (!gateVerified && showIntro) {
+    return (
+      <main className="relative min-h-screen overflow-hidden bg-[#fff7ef] text-stone-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,227,197,0.95),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(253,225,223,0.75),_transparent_28%),linear-gradient(180deg,_#fff9f4_0%,_#fff2e9_45%,_#fff8f1_100%)]" />
+
+        <section className="relative z-10 flex min-h-screen items-center justify-center px-4 py-12 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-md text-center"
+          >
+            <div className="rounded-[2.5rem] border border-white/70 bg-white/75 px-6 py-12 shadow-[0_24px_80px_rgba(162,89,62,0.10)] backdrop-blur-xl sm:px-10 sm:py-16">
+              {/* Step indicator */}
+              <span className="inline-block rounded-full bg-amber-100/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-700 mb-6">
+                Step 1
+              </span>
+
+              <h2 className="font-serif text-3xl leading-tight text-rose-950 sm:text-4xl">
+                To start registration, generate your token
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-sm text-base text-stone-500">
+                You&apos;ll need a unique token to access the registration form.
+              </p>
+
+              <a
+                href="/get-token"
+                className="mt-10 inline-block w-full max-w-[280px] rounded-2xl bg-[linear-gradient(135deg,#f2d188,#e88db0)] px-8 py-5 text-[17px] font-semibold text-white shadow-[0_8px_30px_rgba(232,141,176,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(232,141,176,0.35)] active:scale-[0.98]"
+              >
+                Get Token
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setShowIntro(false)}
+                className="mt-6 block mx-auto text-sm font-semibold text-amber-700 transition hover:text-rose-700 hover:underline"
+              >
+                I already have a token
+              </button>
+            </div>
+          </motion.div>
+        </section>
+      </main>
+    );
+  }
+
+  // ── Step 4: Token Gate / Login Screen ──
   if (!gateVerified) {
     return (
       <AnimatePresence mode="wait">
@@ -543,11 +592,14 @@ export default function RegisterPage() {
                   <span>✿</span>
                   <span className="bell" style={{ animationDelay: "0.2s" }}>۞</span>
                 </div>
-                <h2 className="mt-4 font-serif text-3xl font-medium tracking-tight text-rose-950 sm:text-4xl">
-                  Access Registration
+                <span className="inline-block rounded-full bg-amber-100/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-700 mb-4">
+                  Step 2
+                </span>
+                <h2 className="mt-2 font-serif text-3xl font-medium tracking-tight text-rose-950 sm:text-4xl">
+                  Login to continue
                 </h2>
                 <p className="mx-auto mt-3 max-w-md text-base text-stone-500">
-                  Enter your token and mobile number to continue
+                  Enter your mobile number and token to access the form
                 </p>
               </div>
 

@@ -3,9 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ─── Users Collection ───
-    // Owner read and write only (auth.uid must match document ID)
+    // Any authenticated user can read (needed for mobile/token duplicate checks)
+    // Only the document owner can write
     match /users/{userId} {
-      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
     
     // ─── Registrations Collection (Single Source of Truth) ───
