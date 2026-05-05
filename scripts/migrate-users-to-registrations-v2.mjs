@@ -86,20 +86,7 @@ async function migrate() {
         continue;
       }
 
-      // ── Check if registration already exists and is complete ──
       const regRef = db.collection("registrations").doc(uid);
-      const regSnap = await regRef.get();
-
-      if (regSnap.exists) {
-        const regData = regSnap.data();
-        if (regData.profileCompleted) {
-          console.log(
-            `⏭️  [${uid}] Skipped — already has completed registration (name: ${regData.name || "—"})`
-          );
-          skipped++;
-          continue;
-        }
-      }
 
       // ── Build the registration document ──
       const registrationData = {
@@ -121,6 +108,9 @@ async function migrate() {
 
         // Profile object (full copy if present)
         ...(userData.profile ? { profile: userData.profile } : {}),
+
+        // Mark as completed so they show up in the directory
+        profileCompleted: true,
 
         // Resume if present
         ...(userData.resumeUrl ? { resumeUrl: userData.resumeUrl } : {}),
