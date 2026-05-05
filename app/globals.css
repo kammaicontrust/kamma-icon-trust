@@ -343,3 +343,269 @@ button, .button { touch-action: manipulation; }
   50% { transform: translateX(6px); }
   75% { transform: translateX(-6px); }
 }
+
+/* ===== PROFILE FILTER SYSTEM ===== */
+
+/* ── Range Slider ── */
+.range-slider-track {
+  position: relative;
+  height: 6px;
+  background: rgba(10, 31, 68, 0.08);
+  border-radius: 99px;
+  margin: 8px 0;
+}
+
+.range-slider-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, #FF9933, #FFB266);
+  border-radius: 99px;
+  pointer-events: none;
+}
+
+.range-input {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  height: 100%;
+  margin: 0;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2.5px solid #FF9933;
+  box-shadow: 0 2px 8px rgba(255, 153, 51, 0.3);
+  cursor: pointer;
+  pointer-events: all;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.range-input::-webkit-slider-thumb:hover,
+.range-input:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 4px 16px rgba(255, 153, 51, 0.4);
+}
+
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2.5px solid #FF9933;
+  box-shadow: 0 2px 8px rgba(255, 153, 51, 0.3);
+  cursor: pointer;
+  pointer-events: all;
+}
+
+/* ── Filter Chips ── */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid rgba(10, 31, 68, 0.12);
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(10, 31, 68, 0.6);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.filter-chip:hover {
+  border-color: rgba(255, 153, 51, 0.4);
+  color: #FF9933;
+  background: rgba(255, 153, 51, 0.06);
+  transform: translateY(-1px);
+}
+
+.filter-chip--active {
+  background: linear-gradient(135deg, rgba(255, 153, 51, 0.15), rgba(255, 153, 51, 0.08));
+  border-color: #FF9933;
+  color: #D4882F;
+  box-shadow: 0 2px 12px rgba(255, 153, 51, 0.2);
+}
+
+/* ── Active Filter Tags (removable) ── */
+.active-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 153, 51, 0.12);
+  border: 1.5px solid rgba(255, 153, 51, 0.3);
+  color: #D4882F;
+  animation: tagPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.active-tag button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 153, 51, 0.2);
+  border: none;
+  color: #D4882F;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.active-tag button:hover {
+  background: #FF9933;
+  color: white;
+  transform: scale(1.15);
+}
+
+@keyframes tagPop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Mobile Bottom Sheet ── */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 31, 68, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 400;
+  animation: fadeIn 0.2s ease both;
+}
+
+.filter-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 28px 28px 0 0;
+  z-index: 401;
+  padding: 16px 24px 40px;
+  animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  overscroll-behavior: contain;
+}
+
+.filter-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(10, 31, 68, 0.15);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0.5; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Filter FAB (mobile floating button) ── */
+.filter-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #FF9933, #FFB266);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 32px rgba(255, 153, 51, 0.45);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  touch-action: manipulation;
+}
+
+.filter-fab:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 12px 40px rgba(255, 153, 51, 0.55);
+}
+
+.filter-fab:active {
+  transform: scale(0.96);
+}
+
+/* ── Filter Panel Select/Dropdown ── */
+.filter-select {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(10, 31, 68, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  color: #0A1F44;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', system-ui, sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230A1F44' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.filter-select:focus {
+  border-color: rgba(255, 153, 51, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.1);
+  background-color: white;
+}
+
+/* ── Filter Text Input ── */
+.filter-text-input {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(10, 31, 68, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  color: #0A1F44;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', system-ui, sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-text-input::placeholder { color: rgba(10, 31, 68, 0.35); }
+
+.filter-text-input:focus {
+  border-color: rgba(255, 153, 51, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.1);
+  background: white;
+}
+

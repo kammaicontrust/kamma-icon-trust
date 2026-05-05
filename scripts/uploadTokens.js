@@ -19,9 +19,10 @@ const tokens = JSON.parse(fs.readFileSync("tokens.json", "utf-8"));
 
 async function uploadTokens() {
   for (let token of tokens) {
-    await addDoc(collection(db, "users"), {
+    await addDoc(collection(db, "registrations"), {
       token: token,
       name: "Admin Seeded",
+      profileCompleted: false,
       createdAt: new Date()
     });
     console.log("Uploaded:", token);

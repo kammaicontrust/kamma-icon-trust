@@ -182,7 +182,7 @@ export default function GetTokenPage() {
     try {
       // Step 1: Check if mobile already has a token
       const existingQuery = query(
-        collection(db, "users"),
+        collection(db, "registrations"),
         where("mobile", "==", cleanMobile)
       );
       const existingSnapshot = await getDocs(existingQuery);
@@ -206,7 +206,7 @@ export default function GetTokenPage() {
 
       while (attempts < maxAttempts) {
         const dupeCheck = query(
-          collection(db, "users"),
+          collection(db, "registrations"),
           where("token", "==", tokenCode)
         );
         const dupeSnap = await getDocs(dupeCheck);
@@ -220,9 +220,9 @@ export default function GetTokenPage() {
         return;
       }
 
-      // Step 3: Save/update user data with token in users collection
+      // Step 3: Save/update user data with token in registrations collection
       await setDoc(
-        doc(db, "users", user.uid),
+        doc(db, "registrations", user.uid),
         {
           uid: user.uid,
           name: cleanName,
@@ -233,6 +233,7 @@ export default function GetTokenPage() {
           photoURL: user.photoURL || "",
           authProvider: "google",
           token: tokenCode,
+          profileCompleted: false, // Initial state
           createdAt: serverTimestamp(),
           lastLoginAt: serverTimestamp(),
         },

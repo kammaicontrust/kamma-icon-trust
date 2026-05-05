@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionTemplate } from "framer-motion";
-import { MapPin, Briefcase, Network, User as UserIcon } from "lucide-react";
+import { MapPin, Briefcase, Network, User as UserIcon, GraduationCap, Users } from "lucide-react";
 import Link from "next/link";
 import { useDepthCard } from "@/app/hooks/useDepth";
 
@@ -57,10 +57,19 @@ export default function ProfileCard({ user }) {
           </div>
         </div>
 
-        {/* Name */}
-        <h3 className="text-xl font-black text-[#0A1F44] tracking-tight mb-6 text-center">
+        {/* Name + Gender badge */}
+        <h3 className="text-xl font-black text-[#0A1F44] tracking-tight mb-2 text-center">
           {user.name || "Kamma Member"}
         </h3>
+        {user.gender && (
+          <span className={`mb-5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+            user.gender === "Male"
+              ? "bg-blue-50 text-blue-500 border border-blue-100"
+              : "bg-pink-50 text-pink-500 border border-pink-100"
+          }`}>
+            {user.gender === "Male" ? "♂" : "♀"} {user.gender}
+          </span>
+        )}
 
         {/* Details */}
         <div className="w-full space-y-3.5 mb-8">
@@ -68,6 +77,7 @@ export default function ProfileCard({ user }) {
           <InfoRow icon={Network} label="Gothram" value={user.gothram} />
           <InfoRow icon={Briefcase} label="Job" value={user.occupation} />
           <InfoRow icon={UserIcon} label="Age" value={user.age ? `${user.age} yrs` : null} />
+          {user.education && <InfoRow icon={GraduationCap} label="Education" value={user.education} />}
         </div>
 
         {/* View Profile Button */}

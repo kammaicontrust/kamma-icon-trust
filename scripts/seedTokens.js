@@ -102,7 +102,7 @@ function validateInput(tokens) {
 // ─── Check against existing Firestore data ───
 async function checkExistingConflicts(tokens) {
   const errors = [];
-  const existingSnapshot = await db.collection("users").get();
+  const existingSnapshot = await db.collection("registrations").get();
   
   const existingTokens = new Set();
   const existingMobiles = new Set();
@@ -159,11 +159,12 @@ async function seedTokens() {
   const batch = db.batch();
 
   for (const entry of tokensToSeed) {
-    const ref = db.collection("users").doc();
+    const ref = db.collection("registrations").doc();
     batch.set(ref, {
       name: "Admin Seeded",
       token: entry.token.trim().toUpperCase(),
       mobile: entry.mobile,
+      profileCompleted: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   }

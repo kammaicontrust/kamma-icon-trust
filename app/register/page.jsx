@@ -297,7 +297,7 @@ export default function RegisterPage() {
       console.log("Token verification input:", cleanToken);
 
       const tokenFieldQuery = query(
-        collection(db, "users"),
+        collection(db, "registrations"),
         where("token", "==", cleanToken)
       );
 
@@ -467,9 +467,9 @@ export default function RegisterPage() {
     setGateError("");
 
     try {
-      // Check users collection for matching mobile + token
+      // Check registrations collection for matching mobile + token
       const tokenQuery = query(
-        collection(db, "users"),
+        collection(db, "registrations"),
         where("token", "==", cleanToken),
         where("mobile", "==", cleanMobile)
       );
