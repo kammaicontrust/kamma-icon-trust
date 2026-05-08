@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, Suspense } from "react";
 import { db } from "@/app/lib/firebase";
-import { collection, addDoc, serverTimestamp, doc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from "firebase/firestore";
 import { usePathname, useSearchParams } from "next/navigation";
 
-export default function useTracking() {
+function TrackingLogic() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isFirstLoad = useRef(true);
 
   useEffect(() => {
     // Prevent tracking on admin routes
@@ -49,4 +48,14 @@ export default function useTracking() {
 
     trackPageView();
   }, [pathname, searchParams]);
+
+  return null;
+}
+
+export default function AnalyticsTracker() {
+  return (
+    <Suspense fallback={null}>
+      <TrackingLogic />
+    </Suspense>
+  );
 }
