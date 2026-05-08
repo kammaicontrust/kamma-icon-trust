@@ -23,8 +23,7 @@ export const AdminAuthProvider = ({ children }) => {
           if (adminDoc.exists()) {
             setAdminUser({ ...user, role: adminDoc.data().role || "admin" });
           } else {
-            // Not an admin
-            await signOut(auth);
+            // Not an admin - do NOT sign out globally, just don't set local state
             setAdminUser(null);
             if (pathname.startsWith("/admin") && pathname !== "/admin-login") {
               router.push("/admin-login?error=unauthorized");
@@ -32,7 +31,6 @@ export const AdminAuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error("Admin check error:", error);
-          await signOut(auth);
           setAdminUser(null);
         }
       } else {

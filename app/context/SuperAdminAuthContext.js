@@ -22,9 +22,8 @@ export const SuperAdminAuthProvider = ({ children }) => {
         if (user.email === ALLOWED_ADMIN_EMAIL) {
           setAdminUser(user);
         } else {
-          // Not the super admin
+          // Not the super admin - just set state to null for THIS context
           const email = user.email;
-          signOut(auth);
           setAdminUser(null);
           if (pathname.startsWith("/super-admin") && pathname !== "/super-admin/login") {
             router.push(`/super-admin/login?error=denied&email=${encodeURIComponent(email)}`);
