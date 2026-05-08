@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const footerLinks = [
   { label: "Home", href: "/" },
@@ -8,6 +11,12 @@ const footerLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Hide footer on admin and super-admin routes
+  if (pathname?.startsWith("/super-admin") || pathname?.startsWith("/admin")) {
+    return null;
+  }
   return (
     <footer className="border-t border-[#0A1F44]/5 bg-white/50 py-12 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-6 lg:px-12">

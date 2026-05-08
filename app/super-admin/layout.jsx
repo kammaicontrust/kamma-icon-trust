@@ -47,6 +47,11 @@ export default function SuperAdminLayout({ children }) {
     );
   }
 
+  // If we're on the login page, just render the children without the sidebar/header
+  if (pathname === "/super-admin/login") {
+    return <>{children}</>;
+  }
+
   if (!adminUser) return null;
 
   const SidebarContent = () => (

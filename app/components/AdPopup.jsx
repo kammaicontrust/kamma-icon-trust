@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 let adShown = false; // 🔥 GLOBAL LOCK
 
 export default function AdPopup() {
+  const pathname = usePathname();
   const [showAd, setShowAd] = useState(false);
+
+  // Hide ad on admin and super-admin routes
+  if (pathname?.startsWith("/super-admin") || pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     if (adShown) return;

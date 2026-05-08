@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import Image from "next/image";
 
 export default function LottieLoader() {
+  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+
+  // Hide loader on admin and super-admin routes
+  if (pathname?.startsWith("/super-admin") || pathname?.startsWith("/admin")) {
+    return null;
+  }
   const [fade, setFade] = useState(false);
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef(null);

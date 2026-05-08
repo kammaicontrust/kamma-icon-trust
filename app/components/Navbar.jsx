@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 
@@ -13,8 +14,14 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Hide navbar on admin and super-admin routes
+  if (pathname?.startsWith("/super-admin") || pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
