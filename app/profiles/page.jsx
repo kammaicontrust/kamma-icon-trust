@@ -119,28 +119,28 @@ export default function ProfilesPage() {
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map(doc => {
           const root = doc.data();
-          const p = root.profile || {};
+          const profile = root.profile || {};
 
           let age = null;
-          if (p.dateOfBirth) {
-            const dob = new Date(p.dateOfBirth);
+          if (profile.dateOfBirth) {
+            const dob = new Date(profile.dateOfBirth);
             const diff = Date.now() - dob.getTime();
             age = Math.abs(new Date(diff).getUTCFullYear() - 1970);
           }
 
           return {
             id: doc.id,
-            name: root.name || p.name,
-            village: p.placeOfBirth || p.village,
-            gothram: p.gotra || p.gothram,
-            age: age || p.age || null,
-            photoUrl: root.profileImageUrl || null,
-            gender: p.gender || null,
-            maritalStatus: p.maritalStatus || null,
-            education: p.education || p.qualification || null,
-            occupation: p.occupation || p.job || null,
-            heightCm: parseHeightCm(p.height),
-            annualIncome: p.annualIncome || p.income || null,
+            name: root.name || profile.name || "Kamma Member",
+            village: profile.placeOfBirth || profile.village || "Not provided",
+            gothram: profile.gotra || profile.gothram || "Not provided",
+            age: age || profile.age || null,
+            photoUrl: root.profileImageUrl || profile.photoUrl || null,
+            gender: profile.gender || null,
+            maritalStatus: profile.maritalStatus || null,
+            education: profile.education || profile.qualification || null,
+            occupation: profile.occupation || profile.job || null,
+            heightCm: parseHeightCm(profile.height),
+            annualIncome: profile.annualIncome || profile.income || null,
           };
         });
         setUsers(data);

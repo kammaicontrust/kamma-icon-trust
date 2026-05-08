@@ -34,13 +34,13 @@ export default function ProfilePage() {
         const docRef = doc(db, "registrations", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const rootData = docSnap.data();
-          const data = rootData.profile || {};
+          const data = docSnap.data();
+          const profile = data.profile || {};
           
           // Calculate age from dateOfBirth if available
           let calculatedAge = null;
-          if (data.dateOfBirth) {
-            const dob = new Date(data.dateOfBirth);
+          if (profile.dateOfBirth) {
+            const dob = new Date(profile.dateOfBirth);
             const diffMs = Date.now() - dob.getTime();
             const ageDt = new Date(diffMs);
             calculatedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
@@ -48,15 +48,40 @@ export default function ProfilePage() {
           
           setUser({ 
             id: docSnap.id, 
-            ...data,
-            name: rootData.name || data.name,
-            village: data.placeOfBirth || data.village,
-            gothram: data.gotra || data.gothram,
-            age: calculatedAge || data.age,
-            photoUrl: rootData.profileImageUrl || data.photoUrl,
-            resumeUrl: rootData.resumeUrl || data.resumeUrl,
-            email: rootData.email || data.emailId || data.email,
-            mobile: rootData.mobile || data.contactNumber || data.mobile
+            name: data.name || profile.name || "Not provided",
+            email: data.email || profile.emailId || profile.email || "Not provided",
+            mobile: data.mobile || profile.contactNumber || profile.mobile || "Not provided",
+            photoUrl: data.profileImageUrl || profile.photoUrl || "/default-avatar.png",
+            resumeUrl: data.resumeUrl || profile.resumeUrl,
+            
+            // Profile fields (nested)
+            bloodGroup: profile.bloodGroup || "Not provided",
+            dateOfBirth: profile.dateOfBirth || "Not provided",
+            education: profile.education || "Not provided",
+            gender: profile.gender || "Not provided",
+            maritalStatus: profile.maritalStatus || "Not provided",
+            height: profile.height || "Not provided",
+            weight: profile.weight || "Not provided",
+            religion: profile.religion || "Not provided",
+            fatherName: profile.fatherName || "Not provided",
+            motherName: profile.motherName || "Not provided",
+            
+            // Other fields
+            village: profile.placeOfBirth || profile.village || "Not provided",
+            gothram: profile.gotra || profile.gothram || "Not provided",
+            age: calculatedAge || profile.age || "Not provided",
+            occupation: profile.occupation || "Not provided",
+            fatherOccupation: profile.fatherOccupation || "Not provided",
+            motherOccupation: profile.motherOccupation || "Not provided",
+            siblings: profile.siblings || "Not provided",
+            nakshatra: profile.nakshatra || "Not provided",
+            rashi: profile.rashi || "Not provided",
+            manglik: profile.manglik || "Not provided",
+            placeOfBirth: profile.placeOfBirth || "Not provided",
+            timeOfBirth: profile.timeOfBirth || "Not provided",
+            caste: profile.caste || "Not provided",
+            income: profile.income || profile.annualIncome || "Not provided",
+            complexion: profile.complexion || "Not provided"
           });
         }
       } catch (err) {
