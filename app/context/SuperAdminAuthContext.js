@@ -18,14 +18,16 @@ export const SuperAdminAuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        console.log("Super Admin Auth - Authenticated Email:", user.email);
         if (user.email === ALLOWED_ADMIN_EMAIL) {
           setAdminUser(user);
         } else {
           // Not the super admin
+          const email = user.email;
           signOut(auth);
           setAdminUser(null);
           if (pathname.startsWith("/super-admin") && pathname !== "/super-admin/login") {
-            router.push("/super-admin/login?error=denied");
+            router.push(`/super-admin/login?error=denied&email=${encodeURIComponent(email)}`);
           }
         }
       } else {

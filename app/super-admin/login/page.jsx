@@ -1,14 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSuperAdminAuth } from "@/app/context/SuperAdminAuthContext";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, LogIn, AlertCircle, Loader2, Sparkles } from "lucide-react";
 
-export default function SuperAdminLogin() {
+function LoginContent() {
   const { loginWithGoogle, adminUser, loading } = useSuperAdminAuth();
+  const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    const errorType = searchParams.get("error");
+    const rejectedEmail = searchParams.get("email");
+    if (errorType === "denied") {
+      setError(`Access Denied: ${rejectedEmail} is not authorized. Only the website owner can access this panel.`);
+    }
+  }, [searchParams]);
 
   const handleLogin = async () => {
     setError("");
@@ -105,5 +115,13 @@ export default function SuperAdminLogin() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+export default function SuperAdminLogin() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A1F44]" />}>
+      <LoginContent />
+    </Suspense>
   );
 }
