@@ -15,8 +15,15 @@ function TrackingLogic() {
 
     const trackPageView = async () => {
       try {
-        const sessionID = sessionStorage.getItem("sessionID") || Math.random().toString(36).substring(7);
-        sessionStorage.setItem("sessionID", sessionID);
+        if (typeof window === "undefined") return;
+
+        let sessionID = "anonymous";
+        try {
+          sessionID = sessionStorage.getItem("sessionID") || Math.random().toString(36).substring(7);
+          sessionStorage.setItem("sessionID", sessionID);
+        } catch (e) {
+          console.warn("Session storage not available:", e);
+        }
 
         const visitorData = {
           url: pathname,

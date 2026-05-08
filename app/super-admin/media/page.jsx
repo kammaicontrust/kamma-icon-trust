@@ -33,6 +33,7 @@ export default function MediaManager() {
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef(null);
   
   // Upload State
@@ -40,6 +41,7 @@ export default function MediaManager() {
   const [category, setCategory] = useState("Event");
 
   useEffect(() => {
+    setMounted(true);
     const coll = activeTab === "Gallery" ? "gallery" : "videos";
     const q = query(collection(db, coll), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -197,7 +199,7 @@ export default function MediaManager() {
       {/* Media Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <AnimatePresence>
-          {loading ? (
+          {loading || !mounted ? (
             <div className="col-span-full py-20 text-center text-[#FFD700]"><Loader2 className="w-10 h-10 animate-spin mx-auto" /></div>
           ) : media.map((item) => (
             <motion.div

@@ -52,6 +52,7 @@ const AnalyticsSection = ({ title, children, icon: Icon }) => (
 
 export default function SuperAdminAnalytics() {
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState({
     views: [],
     devices: [],
@@ -61,6 +62,7 @@ export default function SuperAdminAnalytics() {
   });
 
   useEffect(() => {
+    setMounted(true);
     // 1. Listen to Page Views (Real-time)
     const viewsQuery = query(collection(db, "analytics_views"), orderBy("timestamp", "desc"), limit(500));
     const unsubscribe = onSnapshot(viewsQuery, (snapshot) => {
@@ -112,7 +114,7 @@ export default function SuperAdminAnalytics() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-[#FFD700]" /></div>;
+  if (loading || !mounted) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-[#FFD700]" /></div>;
 
   return (
     <div className="space-y-12">

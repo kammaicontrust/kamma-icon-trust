@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 
 export default function PerformanceMonitoring() {
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [metrics, setMetrics] = useState({
     avgLoadTime: "1.2s",
     uptime: "99.99%",
@@ -32,6 +33,7 @@ export default function PerformanceMonitoring() {
   });
 
   useEffect(() => {
+    setMounted(true);
     const fetchData = async () => {
       try {
         // Mocking some infrastructure data for premium look
@@ -50,7 +52,7 @@ export default function PerformanceMonitoring() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-10 h-10 animate-spin text-[#FFD700]" /></div>;
+  if (loading || !mounted) return <div className="flex items-center justify-center h-64"><Loader2 className="w-10 h-10 animate-spin text-[#FFD700]" /></div>;
 
   return (
     <div className="space-y-12">
