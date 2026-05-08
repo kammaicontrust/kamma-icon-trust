@@ -7,11 +7,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
 import HeroOverlay from "../components/HeroOverlay";
 import CinematicTransition from "../components/CinematicTransition";
+import useWebsiteConfig from "../hooks/useWebsiteConfig";
 
 const IntroLogo = dynamic(() => import("./IntroLogo"), { ssr: false });
 const CinematicScene = dynamic(() => import("./CinematicScene"), { ssr: false });
 
 export default function HeroPremium() {
+  const config = useWebsiteConfig();
   const [stage, setStage] = useState("intro"); // "intro" | "hero"
   const [isNavigating, setIsNavigating] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -81,10 +83,7 @@ export default function HeroPremium() {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="mb-8 text-5xl font-black leading-[1.1] tracking-tight text-[#0A1F44] sm:text-7xl lg:text-8xl"
           >
-            Building a <br />
-            <span className="bg-gradient-to-r from-[#FF9933] via-[#0A1F44] to-[#138808] bg-clip-text text-transparent">
-              Better Future
-            </span>
+            {config.heroTitle}
           </motion.h1>
 
           <motion.p
@@ -93,8 +92,7 @@ export default function HeroPremium() {
             transition={{ duration: 1, delay: 0.4 }}
             className="mx-auto mb-12 max-w-2xl text-lg font-medium leading-relaxed text-[#0A1F44]/60 sm:text-xl"
           >
-            Empowering our community through sustainable initiatives,
-            cultural preservation, and collective growth.
+            {config.heroSubtitle}
           </motion.p>
 
           <HeroOverlay
@@ -192,10 +190,7 @@ export default function HeroPremium() {
                   }}
                   className="mb-8 text-5xl font-black leading-[1.1] tracking-tight text-[#0A1F44] sm:text-7xl lg:text-8xl"
                 >
-                  Building a <br />
-                  <span className="bg-gradient-to-r from-[#FF9933] via-[#0A1F44] to-[#138808] bg-clip-text text-transparent">
-                    Better Future
-                  </span>
+                  {config.heroTitle}
                 </motion.h1>
 
                 <motion.p
@@ -205,8 +200,7 @@ export default function HeroPremium() {
                   }}
                   className="mx-auto mb-12 max-w-2xl text-lg font-medium leading-relaxed text-[#0A1F44]/60 sm:text-xl"
                 >
-                  Empowering our community through sustainable initiatives,
-                  cultural preservation, and collective growth.
+                  {config.heroSubtitle}
                 </motion.p>
 
                 <HeroOverlay

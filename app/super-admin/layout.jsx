@@ -22,6 +22,9 @@ const navItems = [
   { name: "Overview", icon: LayoutDashboard, href: "/super-admin" },
   { name: "Registrations", icon: Users, href: "/super-admin/registrations" },
   { name: "Tokens", icon: Ticket, href: "/super-admin/tokens" },
+  { name: "Media", icon: Zap, href: "/super-admin/media" },
+  { name: "Website Content", icon: Settings, href: "/super-admin/content" },
+  { name: "Performance", icon: ShieldAlert, href: "/super-admin/performance" },
 ];
 
 export default function SuperAdminLayout({ children }) {
