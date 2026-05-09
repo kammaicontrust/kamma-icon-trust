@@ -85,6 +85,16 @@ export default function SuperAdminProfileDetail({ params: paramsPromise }) {
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-12 h-12 animate-spin text-[#FFD700]" /></div>;
 
   const profile = user.profile || {};
+  // Helper: check nested profile first, then root-level (for migrated users)
+  const get = (key, ...altKeys) => {
+    const val = profile[key] || user[key];
+    if (val) return val;
+    for (const alt of altKeys) {
+      const altVal = profile[alt] || user[alt];
+      if (altVal) return altVal;
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-12 pb-32">
@@ -168,37 +178,37 @@ export default function SuperAdminProfileDetail({ params: paramsPromise }) {
         <div className="lg:col-span-2 space-y-12">
            <DetailSection title="Personal Narrative" icon={Heart}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
-                 <InfoField label="Biological Gender" value={profile.gender} />
-                 <InfoField label="Age of Maturity" value={profile.age ? `${profile.age} Years` : null} />
-                 <InfoField label="Date of Birth" value={profile.dateOfBirth} />
-                 <InfoField label="Civil Status" value={profile.maritalStatus} />
-                 <InfoField label="Vertical Height" value={profile.height} />
-                 <InfoField label="Body Weight" value={profile.weight} />
-                 <InfoField label="Blood Group" value={profile.bloodGroup} />
-                 <InfoField label="Physical Complexion" value={profile.complexion} />
-                 <InfoField label="Religious Belief" value={profile.religion} />
+                 <InfoField label="Biological Gender" value={get("gender")} />
+                 <InfoField label="Age of Maturity" value={get("age") ? `${get("age")} Years` : null} />
+                 <InfoField label="Date of Birth" value={get("dateOfBirth")} />
+                 <InfoField label="Civil Status" value={get("maritalStatus")} />
+                 <InfoField label="Vertical Height" value={get("height")} />
+                 <InfoField label="Body Weight" value={get("weight")} />
+                 <InfoField label="Blood Group" value={get("bloodGroup")} />
+                 <InfoField label="Physical Complexion" value={get("complexion")} />
+                 <InfoField label="Religious Belief" value={get("religion")} />
               </div>
            </DetailSection>
 
            <DetailSection title="Family & Lineage" icon={UsersIcon}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-                 <InfoField label="Father's Identity" value={profile.fatherName} />
-                 <InfoField label="Paternal Profession" value={profile.fatherOccupation} />
-                 <InfoField label="Mother's Identity" value={profile.motherName} />
-                 <InfoField label="Maternal Profession" value={profile.motherOccupation} />
-                 <InfoField label="Sibling Count" value={profile.siblings} />
-                 <InfoField label="Native Residence" value={profile.village} />
+                 <InfoField label="Father's Identity" value={get("fatherName")} />
+                 <InfoField label="Paternal Profession" value={get("fatherOccupation")} />
+                 <InfoField label="Mother's Identity" value={get("motherName")} />
+                 <InfoField label="Maternal Profession" value={get("motherOccupation")} />
+                 <InfoField label="Sibling Count" value={get("siblings")} />
+                 <InfoField label="Native Residence" value={get("placeOfBirth", "village")} />
               </div>
            </DetailSection>
 
            <DetailSection title="Celestial / Horoscope" icon={Moon}>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-12">
-                 <InfoField label="Gotra / Gothram" value={profile.gotra || profile.gothram} />
-                 <InfoField label="Birth Nakshatra" value={profile.nakshatra} />
-                 <InfoField label="Birth Rashi" value={profile.rashi} />
-                 <InfoField label="Manglik Status" value={profile.manglik} />
-                 <InfoField label="Coordinates of Birth" value={profile.placeOfBirth} />
-                 <InfoField label="Exact Time of Birth" value={profile.timeOfBirth} />
+                 <InfoField label="Gotra / Gothram" value={get("gotra", "gothram")} />
+                 <InfoField label="Birth Nakshatra" value={get("nakshatra")} />
+                 <InfoField label="Birth Rashi" value={get("rashi")} />
+                 <InfoField label="Manglik Status" value={get("manglik")} />
+                 <InfoField label="Coordinates of Birth" value={get("placeOfBirth")} />
+                 <InfoField label="Exact Time of Birth" value={get("timeOfBirth")} />
               </div>
            </DetailSection>
         </div>
@@ -206,9 +216,9 @@ export default function SuperAdminProfileDetail({ params: paramsPromise }) {
         <div className="space-y-12">
            <DetailSection title="Career & Worth" icon={Briefcase}>
               <div className="space-y-10">
-                 <InfoField label="Academic Qualification" value={profile.education} />
-                 <InfoField label="Current Designation" value={profile.occupation} />
-                 <InfoField label="Annual Compensation" value={profile.income || profile.annualIncome} />
+                 <InfoField label="Academic Qualification" value={get("education")} />
+                 <InfoField label="Current Designation" value={get("occupation")} />
+                 <InfoField label="Annual Compensation" value={get("income", "annualIncome")} />
                  
                  <div className="pt-6 space-y-4">
                     <a 

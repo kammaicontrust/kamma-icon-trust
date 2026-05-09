@@ -37,51 +37,63 @@ export default function ProfilePage() {
           const data = docSnap.data();
           const profile = data.profile || {};
           
+          // Helper: check profile nested field first, then root-level (for migrated users)
+          const get = (key, ...altKeys) => {
+            const val = profile[key] || data[key];
+            if (val) return val;
+            for (const alt of altKeys) {
+              const altVal = profile[alt] || data[alt];
+              if (altVal) return altVal;
+            }
+            return null;
+          };
+          
           // Calculate age from dateOfBirth if available
           let calculatedAge = null;
-          if (profile.dateOfBirth) {
-            const dob = new Date(profile.dateOfBirth);
-            const diffMs = Date.now() - dob.getTime();
+          const dob = get("dateOfBirth");
+          if (dob) {
+            const dobDate = new Date(dob);
+            const diffMs = Date.now() - dobDate.getTime();
             const ageDt = new Date(diffMs);
             calculatedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
           }
           
           setUser({ 
             id: docSnap.id, 
-            name: data.name || profile.name || "Not provided",
-            email: data.email || profile.emailId || profile.email || "Not provided",
-            mobile: data.mobile || profile.contactNumber || profile.mobile || "Not provided",
-            photoUrl: data.profileImageUrl || profile.photoUrl || "/default-avatar.png",
-            resumeUrl: data.resumeUrl || profile.resumeUrl,
+            name: data.name || get("name") || "Not provided",
+            email: data.email || get("emailId", "email") || "Not provided",
+            mobile: data.mobile || get("contactNumber", "mobile") || "Not provided",
+            photoUrl: data.profileImageUrl || get("photoUrl", "profileImageUrl") || "/default-avatar.png",
+            resumeUrl: data.resumeUrl || get("resumeUrl"),
             
-            // Profile fields (nested)
-            bloodGroup: profile.bloodGroup || "Not provided",
-            dateOfBirth: profile.dateOfBirth || "Not provided",
-            education: profile.education || "Not provided",
-            gender: profile.gender || "Not provided",
-            maritalStatus: profile.maritalStatus || "Not provided",
-            height: profile.height || "Not provided",
-            weight: profile.weight || "Not provided",
-            religion: profile.religion || "Not provided",
-            fatherName: profile.fatherName || "Not provided",
-            motherName: profile.motherName || "Not provided",
+            // Profile fields — check nested profile AND root level
+            bloodGroup: get("bloodGroup") || "Not provided",
+            dateOfBirth: get("dateOfBirth") || "Not provided",
+            education: get("education") || "Not provided",
+            gender: get("gender") || "Not provided",
+            maritalStatus: get("maritalStatus") || "Not provided",
+            height: get("height") || "Not provided",
+            weight: get("weight") || "Not provided",
+            religion: get("religion") || "Not provided",
+            fatherName: get("fatherName") || "Not provided",
+            motherName: get("motherName") || "Not provided",
             
-            // Other fields
-            village: profile.placeOfBirth || profile.village || "Not provided",
-            gothram: profile.gotra || profile.gothram || "Not provided",
-            age: calculatedAge || profile.age || "Not provided",
-            occupation: profile.occupation || "Not provided",
-            fatherOccupation: profile.fatherOccupation || "Not provided",
-            motherOccupation: profile.motherOccupation || "Not provided",
-            siblings: profile.siblings || "Not provided",
-            nakshatra: profile.nakshatra || "Not provided",
-            rashi: profile.rashi || "Not provided",
-            manglik: profile.manglik || "Not provided",
-            placeOfBirth: profile.placeOfBirth || "Not provided",
-            timeOfBirth: profile.timeOfBirth || "Not provided",
-            caste: profile.caste || "Not provided",
-            income: profile.income || profile.annualIncome || "Not provided",
-            complexion: profile.complexion || "Not provided"
+            // Other fields with alternate names
+            village: get("placeOfBirth", "village") || "Not provided",
+            gothram: get("gotra", "gothram") || "Not provided",
+            age: calculatedAge || get("age") || "Not provided",
+            occupation: get("occupation") || "Not provided",
+            fatherOccupation: get("fatherOccupation") || "Not provided",
+            motherOccupation: get("motherOccupation") || "Not provided",
+            siblings: get("siblings") || "Not provided",
+            nakshatra: get("nakshatra") || "Not provided",
+            rashi: get("rashi") || "Not provided",
+            manglik: get("manglik") || "Not provided",
+            placeOfBirth: get("placeOfBirth") || "Not provided",
+            timeOfBirth: get("timeOfBirth") || "Not provided",
+            caste: get("caste") || "Not provided",
+            income: get("income", "annualIncome") || "Not provided",
+            complexion: get("complexion") || "Not provided"
           });
         }
       } catch (err) {
