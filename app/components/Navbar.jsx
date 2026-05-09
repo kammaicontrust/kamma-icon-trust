@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Bell } from "lucide-react";
-import useWebsiteConfig from "../hooks/useWebsiteConfig";
+import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -15,7 +14,6 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const config = useWebsiteConfig();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,13 +49,6 @@ export default function Navbar() {
             : "bg-transparent py-6"
         }`}
       >
-        {/* Announcement Banner */}
-        {config.announcement && !scrolled && (
-          <div className="bg-[#0A1F44] text-white py-2 px-6 flex items-center justify-center gap-3 overflow-hidden whitespace-nowrap">
-            <Bell className="w-3 h-3 text-[#FFD700] animate-bounce" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{config.announcement}</span>
-          </div>
-        )}
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-12">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-3" onClick={closeMenu}>
