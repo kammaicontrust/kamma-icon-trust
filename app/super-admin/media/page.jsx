@@ -24,7 +24,8 @@ import {
   Tag, 
   Layers,
   ChevronRight,
-  Maximize2
+  Maximize2,
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
