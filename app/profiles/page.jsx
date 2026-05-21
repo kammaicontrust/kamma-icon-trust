@@ -115,7 +115,12 @@ export default function ProfilesPage() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const q = query(collection(db, "registrations"), where("profileCompleted", "==", true));
+        const q = query(
+          collection(db, "registrations"),
+          where("approved", "==", true),
+          where("profileCompleted", "==", true),
+          where("visible", "==", true)
+        );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map(doc => {
           const root = doc.data();

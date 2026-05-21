@@ -75,12 +75,14 @@ export default function ProfileDetailView({ params: paramsPromise }) {
   const handleStatusUpdate = async (status) => {
     setActionLoading(true);
     try {
-      await updateDoc(doc(db, "registrations", id), {
-        profileCompleted: status
-      });
-      setUser(prev => ({ ...prev, profileCompleted: status }));
+      const updateData = status
+        ? { approved: true, profileCompleted: true, visible: true }
+        : { approved: false, profileCompleted: false, visible: false };
+      await updateDoc(doc(db, "registrations", id), updateData);
+      setUser(prev => ({ ...prev, ...updateData }));
     } catch (error) {
-      alert("Failed to update status");
+      console.error("Failed to update status:", error);
+      alert("Failed to update status: " + error.message);
     } finally {
       setActionLoading(false);
     }

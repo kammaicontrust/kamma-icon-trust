@@ -22,13 +22,19 @@ import {
   Loader2,
   CheckCircle
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/app/context/ToastContext";
+import { useSuperAdminAuth } from "@/app/context/SuperAdminAuthContext";
+import { logAdminAction } from "@/app/lib/auditLogger";
 
 export default function TokensManager() {
+  const toast = useToast();
+  const { adminUser } = useSuperAdminAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -44,24 +50,63 @@ export default function TokensManager() {
   }, []);
 
   const generateToken = async () => {
-    const token = `KIT-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    await addDoc(collection(db, "registrations"), {
-      token,
-      mobile: "",
-      profileCompleted: false,
-      submittedAt: serverTimestamp(),
-      isTokenOnly: true
-    });
+    if (generating) return;
+    setGenerating(true);
+    try {
+      const token = `KIT-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      await addDoc(collection(db, "registrations"), {
+        token,
+        mobile: "",
+        profileCompleted: false,
+        submittedAt: serverTimestamp(),
+        isTokenOnly: true
+      });
+      
+      await logAdminAction(
+        adminUser?.email,
+        "create_token",
+        token,
+        `Token: ${token}`,
+        { details: "Generated new invitation access token" }
+      );
+
+      toast.success(`Access token ${token} generated successfully!`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate token.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert("Token copied! 📋");
+    toast.success("Invitation code copied to clipboard!");
   };
 
-  const handleDelete = async (id) => {
-    if (confirm("Delete this token?")) {
+  const handleDelete = async (id, tokenText) => {
+    if (deletingId) return;
+    if (!confirm(`Are you sure you want to delete invitation token ${tokenText}?`)) {
+      return;
+    }
+    setDeletingId(id);
+    try {
       await deleteDoc(doc(db, "registrations", id));
+      
+      await logAdminAction(
+        adminUser?.email,
+        "delete_token",
+        id,
+        `Token: ${tokenText}`,
+        { details: "Deleted invitation access token" }
+      );
+
+      toast.success("Invitation token deleted successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete token.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -78,9 +123,14 @@ export default function TokensManager() {
          </div>
          <button 
            onClick={generateToken}
-           className="bg-[#0A1F44] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-[#0A1F44]/20 hover:scale-105 transition-all flex items-center gap-3"
+           disabled={generating}
+           className="bg-[#0A1F44] text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-[#0A1F44]/20 hover:scale-105 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
          >
-           <Plus className="w-5 h-5 text-[#FFD700]" />
+           {generating ? (
+             <Loader2 className="w-5 h-5 animate-spin text-[#FFD700]" />
+           ) : (
+             <Plus className="w-5 h-5 text-[#FFD700]" />
+           )}
            NEW TOKEN
          </button>
       </div>
@@ -113,11 +163,19 @@ export default function TokensManager() {
                      <div className="p-3 bg-white rounded-2xl text-[#FFD700]">
                         <Ticket className="w-5 h-5" />
                      </div>
-                     <button onClick={() => handleDelete(t.id)} className="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-600 transition-opacity">
-                        <Trash2 className="w-5 h-5" />
-                     </button>
-                  </div>
-                  <h3 className="text-2xl font-black text-[#0A1F44] tracking-tighter mb-1">{t.token}</h3>
+                      <button 
+                        onClick={() => handleDelete(t.id, t.token)} 
+                        disabled={deletingId === t.id}
+                        className="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-600 transition-opacity disabled:opacity-50"
+                      >
+                        {deletingId === t.id ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-5 h-5" />
+                        )}
+                      </button>
+                   </div>
+                   <h3 className="text-2xl font-black text-[#0A1F44] tracking-tighter mb-1">{t.token}</h3>
                   <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-6">Unused Access Code</p>
                   <button 
                     onClick={() => copyToClipboard(t.token)}

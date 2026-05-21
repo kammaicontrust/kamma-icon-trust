@@ -5,6 +5,7 @@ import AnalyticsTracker from "./hooks/useTracking";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
 import { SuperAdminAuthProvider } from "./context/SuperAdminAuthContext";
 import { GuideProvider } from "./context/GuideContext";
+import { ToastProvider } from "./context/ToastContext";
 import OnboardingOverlay from "./components/OnboardingOverlay";
 
 export default function ClientWrapper({ children }) {
@@ -12,11 +13,13 @@ export default function ClientWrapper({ children }) {
   return (
     <SuperAdminAuthProvider>
       <AdminAuthProvider>
-        <GuideProvider>
-          <AnalyticsTracker />
-          {children}
-          <OnboardingOverlay />
-        </GuideProvider>
+        <ToastProvider>
+          <GuideProvider>
+            <AnalyticsTracker />
+            {children}
+            <OnboardingOverlay />
+          </GuideProvider>
+        </ToastProvider>
       </AdminAuthProvider>
     </SuperAdminAuthProvider>
   );

@@ -16,12 +16,14 @@ import {
   Maximize2, Zap, X, RotateCcw, CheckCircle, AlertCircle, Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/app/context/ToastContext";
 
 // ── Upload status enum ──
 const STATUS = { PENDING: "pending", COMPRESSING: "compressing", UPLOADING: "uploading", DONE: "done", ERROR: "error" };
 const BATCH_SIZE = 2;
 
 export default function MediaManager() {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState("Gallery");
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export default function MediaManager() {
   // ── Caption editing ──
   const [editingId, setEditingId] = useState(null);
   const [editCaption, setEditCaption] = useState("");
+  const [deletingMediaId, setDeletingMediaId] = useState(null);
 
   // ── Fetch media with ordering: order ASC → fallback createdAt DESC ──
   useEffect(() => {
@@ -207,12 +210,21 @@ export default function MediaManager() {
     const pending = selectedFiles.filter(f => f.status === STATUS.PENDING || f.status === STATUS.ERROR);
     if (!pending.length) return;
     setIsUploading(true);
+    toast.info(`Starting upload of ${pending.length} media item(s)...`);
 
+    let successCount = 0;
     await processInBatches(pending, BATCH_SIZE, async (fileItem) => {
-      return uploadSingleFile(fileItem);
+      const success = await uploadSingleFile(fileItem);
+      if (success) successCount++;
+      return success;
     });
 
     setIsUploading(false);
+    if (successCount === pending.length) {
+      toast.success(`Successfully uploaded and optimized all ${successCount} item(s)!`);
+    } else {
+      toast.warning(`Uploaded ${successCount} of ${pending.length} items. Some uploads failed.`);
+    }
   };
 
   // ── Retry a single failed upload ──
@@ -220,7 +232,12 @@ export default function MediaManager() {
     const fileItem = selectedFiles.find(f => f.id === id);
     if (!fileItem) return;
     setSelectedFiles(prev => prev.map(f => f.id === id ? { ...f, status: STATUS.PENDING, error: null } : f));
-    await uploadSingleFile(fileItem);
+    const success = await uploadSingleFile(fileItem);
+    if (success) {
+      toast.success("Retry successful!");
+    } else {
+      toast.error("Retry failed.");
+    }
   };
 
   // ── Clear completed uploads ──
@@ -236,22 +253,34 @@ export default function MediaManager() {
 
   // ── Delete media ──
   const handleDelete = async (item) => {
+    if (deletingMediaId) return;
     if (!confirm("Delete this media permanently?")) return;
+    setDeletingMediaId(item.id);
     try {
       if (item.storagePath) await deleteObject(ref(storage, item.storagePath)).catch(() => {});
       if (item.thumbStoragePath) await deleteObject(ref(storage, item.thumbStoragePath)).catch(() => {});
       const coll = activeTab === "Gallery" ? "gallery" : "videos";
       await deleteDoc(doc(db, coll, item.id));
+      toast.success("Media deleted permanently.");
     } catch (error) {
-      alert("Delete failed.");
+      console.error(error);
+      toast.error("Delete failed.");
+    } finally {
+      setDeletingMediaId(null);
     }
   };
 
   // ── Save caption ──
   const saveCaption = async (id) => {
-    const coll = activeTab === "Gallery" ? "gallery" : "videos";
-    await updateDoc(doc(db, coll, id), { title: editCaption });
-    setEditingId(null);
+    try {
+      const coll = activeTab === "Gallery" ? "gallery" : "videos";
+      await updateDoc(doc(db, coll, id), { title: editCaption });
+      toast.success("Caption updated successfully.");
+      setEditingId(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update caption.");
+    }
   };
 
   // ── Status badge renderer ──
@@ -473,9 +502,14 @@ export default function MediaManager() {
                     </button>
                     <button
                       onClick={() => handleDelete(item)}
-                      className="p-3 bg-rose-500/10 backdrop-blur-md border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all"
+                      disabled={deletingMediaId === item.id}
+                      className="p-3 bg-rose-500/10 backdrop-blur-md border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[44px] min-h-[44px]"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      {deletingMediaId === item.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
                     </button>
                     <button className="p-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl hover:bg-white hover:text-[#0A1F44] transition-all">
                       <Maximize2 className="w-5 h-5" />

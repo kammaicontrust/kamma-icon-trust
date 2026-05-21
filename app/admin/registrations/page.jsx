@@ -85,12 +85,15 @@ export default function RegistrationsManagement() {
 
   const toggleApproval = async (id, currentStatus) => {
     try {
-      await updateDoc(doc(db, "registrations", id), {
-        profileCompleted: !currentStatus
-      });
-      setRegistrations(prev => prev.map(r => r.id === id ? { ...r, profileCompleted: !currentStatus } : r));
+      const newStatus = !currentStatus;
+      const updateData = newStatus
+        ? { approved: true, profileCompleted: true, visible: true }
+        : { approved: false, profileCompleted: false, visible: false };
+      await updateDoc(doc(db, "registrations", id), updateData);
+      setRegistrations(prev => prev.map(r => r.id === id ? { ...r, ...updateData } : r));
     } catch (error) {
-      alert("Failed to update status");
+      console.error("Failed to update status:", error);
+      alert("Failed to update status: " + error.message);
     }
   };
 
