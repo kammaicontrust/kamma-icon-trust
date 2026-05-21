@@ -27,13 +27,15 @@ function parseHeightCm(val) {
   if (!val) return null;
   if (typeof val === "number") return val;
   const str = String(val).trim();
-  // "5'8"  or  5ft 8in
-  const ftInMatch = str.match(/(\d+)[''ft]+\s*(\d*)/i);
+  
+  // Regex to match feet and inches formats (e.g. 5 ft 11 in, 5'11", 5ft 11, 5-11)
+  const ftInMatch = str.match(/^(\d+)\s*(?:'|ft|feet|\-)\s*(\d+)?/i);
   if (ftInMatch) {
     const ft = parseInt(ftInMatch[1], 10);
     const inch = parseInt(ftInMatch[2] || "0", 10);
     return Math.round(ft * 30.48 + inch * 2.54);
   }
+  
   // Pure number or "172 cm"
   const num = parseFloat(str);
   return isNaN(num) ? null : num;
