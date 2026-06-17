@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "@/app/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "@/app/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 
 const AdminAuthContext = createContext({});
@@ -17,21 +16,15 @@ export const AdminAuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if user is an admin in Firestore
-        try {
-          const adminDoc = await getDoc(doc(db, "admins", user.email));
-          if (adminDoc.exists()) {
-            setAdminUser({ ...user, role: adminDoc.data().role || "admin" });
-          } else {
-            // Not an admin - do NOT sign out globally, just don't set local state
-            setAdminUser(null);
-            if (pathname.startsWith("/admin") && pathname !== "/admin-login") {
-              router.push("/admin-login?error=unauthorized");
-            }
-          }
-        } catch (error) {
-          console.error("Admin check error:", error);
+        if (user.email === "kammaicontrust@gmail.com") {
+          setAdminUser({ ...user, role: "admin" });
+        } else {
+          // Not authorized admin - sign out and redirect
+          await signOut(auth);
           setAdminUser(null);
+          if (pathname.startsWith("/admin") && pathname !== "/admin-login") {
+            router.push("/admin-login?error=denied");
+          }
         }
       } else {
         setAdminUser(null);
