@@ -1,5 +1,6 @@
 import "./globals.css";
 import Script from "next/script";
+import { Analytics } from '@vercel/analytics/next';
 import LottieLoader from "./components/LottieLoader";
 import ClientWrapper from "./ClientWrapper";
 import AdPopup from "./components/AdPopup";
@@ -41,6 +42,9 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-ML2SCJJL5');
           `}
         </Script>
+
+        {/* Vercel Web Analytics */}
+        <Analytics />
       </body>
     </html>
   );
